@@ -2,11 +2,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/action_uninstall"
-        android:icon="@drawable/ic_trash_can"
-        android:title="@string/uninstall" />
-    <item
-        android:id="@+id/action_archive"
+                 android:id="@+id/action_uninstall"
+                 android:icon="@drawable/ic_trash_can"
+                 android:title="@string/uninstall" />
+            <item
+                android:id="@+id/action_archive"
+                android:icon="@drawable/ic_archive"
+                android:title="@string/archive" />
+             <item        android:id="@+id/action_archive"
         android:icon="@drawable/ic_archive"
         android:title="@string/archive" />
     <item

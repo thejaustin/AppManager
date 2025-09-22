@@ -88,6 +88,10 @@ import io.github.muntashirakon.AppManager.db.AppsDb;
 import io.github.muntashirakon.AppManager.db.entity.ArchivedApp;
 import io.github.muntashirakon.AppManager.runner.Runner;
 
+import io.github.muntashirakon.AppManager.db.AppsDb;
+import io.github.muntashirakon.AppManager.db.entity.ArchivedApp;
+import io.github.muntashirakon.AppManager.runner.Runner;
+
 @WorkerThread
 public class BatchOpsManager {
     public static final String TAG = "BatchOpsManager";
@@ -898,6 +902,62 @@ public class BatchOpsManager {
                 // Get app info before uninstalling
                 ApplicationInfo appInfo = pm.getApplicationInfo(pair.getPackageName(), 0);
                 String appName = appInfo.loadLabel(pm).toString();
+
+                boolean success = false;
+                if (ShizukuUtils.isShizukuAvailable()) {
+                    Integer exitCode = ShizukuUtils.runCommand(ContextUtils.getContext(), "pm uninstall -k " + pair.getPackageName());
+                    if (exitCode != null && exitCode == 0) {
+                        success = true;
+                    } else {
+                        log("====> op=ARCHIVE, pkg=" + pair + ", exitCode=" + exitCode);
+                    }
+                } else {
+                    // Fallback to the old method if Shizuku is not available
+                    PackageInstallerCompat installer = PackageInstallerCompat.getNewInstance();
+                    success = installer.uninstall(pair.getPackageName(), pair.getUserId(), true);
+                }
+
+                if (success) {
+                    ArchivedApp archivedApp = new ArchivedApp(pair.getPackageName(), appName, System.currentTimeMillis());
+                    archivedAppDao.insert(archivedApp);
+                } else {
+                    failedPackages.add(pair);
+                    log("====> op=ARCHIVE, pkg=" + pair + " failed");
+                }
+            } catch (PackageManager.NameNotFoundException e) {
+                failedPackages.add(pair);
+                log("====> op=ARCHIVE, pkg=" + pair + " not found", e);
+            } catch (Exception e) {
+                failedPackages.add(pair);
+                log("====> op=ARCHIVE, pkg=" + pair, e);
+            }
+        }
+        return new Result(failedPackages);
+    }
+
+    @NonNull
+    private Result opArchive(@NonNull BatchOpsInfo info) {
+        List<UserPackagePair> failedPackages = new ArrayList<>();
+        float lastProgress = mProgressHandler != null ? mProgressHandler.getLastProgress() : 0;
+        ArchivedAppDao archivedAppDao = AppsDb.getInstance().archivedAppDao();
+        PackageManager pm = ContextUtils.getContext().getPackageManager();
+        int max = info.size();
+        UserPackagePair pair;
+        for (int i = 0; i < max; ++i) {
+            updateProgress(lastProgress, i + 1);
+            pair = info.getPair(i);
+<<<<<<< HEAD
+
+            if (BuildConfig.APPLICATION_ID.equals(pair.getPackageName())) {
+                log("====> op=ARCHIVE, cannot archive the app itself");
+                failedPackages.add(pair);
+                continue;
+            }
+
+            try {
+                // Get app info before uninstalling
+                ApplicationInfo appInfo = pm.getApplicationInfo(pair.getPackageName(), 0);
+                String appName = appInfo.loadLabel(pm).toString();
                 String apkPath = appInfo.sourceDir;
 
                 boolean success = false;
@@ -924,6 +984,19 @@ public class BatchOpsManager {
             } catch (PackageManager.NameNotFoundException e) {
                 failedPackages.add(pair);
                 log("====> op=ARCHIVE, pkg=" + pair + " not found", e);
+=======
+            try {
+                Runner.Result result = Runner.runCommand("pm uninstall -k " + pair.getPackageName());
+                if (result.isSuccessful()) {
+                    ApplicationInfo appInfo = pm.getApplicationInfo(pair.getPackageName(), 0);
+                    String appName = appInfo.loadLabel(pm).toString();
+                    ArchivedApp archivedApp = new ArchivedApp(pair.getPackageName(), appName, System.currentTimeMillis());
+                    archivedAppDao.insert(archivedApp);
+                } else {
+                    failedPackages.add(pair);
+                    log("====> op=ARCHIVE, pkg=" + pair);
+                }
+>>>>>>> 9a30ddac1 (feat: Implement Archive and Restore functionality)
             } catch (Exception e) {
                 failedPackages.add(pair);
                 log("====> op=ARCHIVE, pkg=" + pair, e);

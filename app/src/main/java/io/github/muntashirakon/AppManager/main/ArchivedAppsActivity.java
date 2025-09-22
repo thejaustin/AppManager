@@ -1,51 +1,45 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 package io.github.muntashirakon.AppManager.main;
 
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import java.util.List;
-
+import io.github.muntashirakon.AppManager.BaseActivity;
 import io.github.muntashirakon.AppManager.R;
-import io.github.muntashirakon.AppManager.adapters.ArchivedAppsAdapter;
+import io.github.muntashirakon.AppManager.db.AppsDb;
 import io.github.muntashirakon.AppManager.db.entity.ArchivedApp;
-import io.github.muntashirakon.AppManager.viewmodel.ArchivedAppsViewModel;
 
-public class ArchivedAppsActivity extends AppCompatActivity {
+public class ArchivedAppsActivity extends BaseActivity {
+
+    private ArchivedAppsAdapter adapter;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    protected void onAuthenticated(@Nullable Bundle savedInstanceState) {
         setContentView(R.layout.activity_archived_apps);
-
-        RecyclerView recyclerView = findViewById(R.id.recycler_view);
+        RecyclerView recyclerView = findViewById(R.id.archived_apps_list);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        ArchivedAppsViewModel viewModel = new ViewModelProvider(this).get(ArchivedAppsViewModel.class);
-        viewModel.getArchivedApps().observe(this, archivedApps -> {
-            ArchivedAppsAdapter adapter = new ArchivedAppsAdapter(archivedApps, this::onRestoreClicked);
-            recyclerView.setAdapter(adapter);
+        AppsDb.getInstance().archivedAppDao().getAll().observe(this, archivedApps -> {
+            if (adapter == null) {
+                adapter = new ArchivedAppsAdapter(archivedApps, this::onRestoreClicked);
+                recyclerView.setAdapter(adapter);
+            } else {
+                adapter.updateData(archivedApps);
+            }
         });
     }
 
     private void onRestoreClicked(ArchivedApp archivedApp) {
-        if (archivedApp.apkPath != null) {
-            io.github.muntashirakon.AppManager.apk.installer.PackageInstallerCompat installer = io.github.muntashirakon.AppManager.apk.installer.PackageInstallerCompat.getNewInstance();
-            installer.install(new io.github.muntashirakon.io.Path[]{io.github.muntashirakon.io.Paths.get(archivedApp.apkPath)}, null, null);
-        } else {
-            // Fallback to the old method if the apkPath is not available
-            try {
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + archivedApp.packageName));
-                startActivity(intent);
-            } catch (android.content.ActivityNotFoundException anfe) {
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + archivedApp.packageName)));
-            }
+        try {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + archivedApp.packageName));
+            startActivity(intent);
+        } catch (android.content.ActivityNotFoundException anfe) {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + archivedApp.packageName)));
         }
     }
 }
