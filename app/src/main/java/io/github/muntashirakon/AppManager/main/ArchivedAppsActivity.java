@@ -35,11 +35,17 @@ public class ArchivedAppsActivity extends BaseActivity {
     }
 
     private void onRestoreClicked(ArchivedApp archivedApp) {
-        try {
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + archivedApp.packageName));
-            startActivity(intent);
-        } catch (android.content.ActivityNotFoundException anfe) {
-            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + archivedApp.packageName)));
+        if (archivedApp.apkPath != null) {
+            io.github.muntashirakon.AppManager.apk.installer.PackageInstallerCompat installer = io.github.muntashirakon.AppManager.apk.installer.PackageInstallerCompat.getNewInstance();
+            installer.install(Uri.fromFile(new java.io.File(archivedApp.apkPath)));
+        } else {
+            // Fallback to the old method if the apkPath is not available
+            try {
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + archivedApp.packageName));
+                startActivity(intent);
+            } catch (android.content.ActivityNotFoundException anfe) {
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + archivedApp.packageName)));
+            }
         }
     }
 }

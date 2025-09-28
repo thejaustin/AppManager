@@ -25,7 +25,7 @@ import io.github.muntashirakon.AppManager.db.entity.LogFilter;
 import io.github.muntashirakon.AppManager.db.entity.OpHistory;
 import io.github.muntashirakon.AppManager.utils.ContextUtils;
 
-@Database(entities = {App.class, LogFilter.class, Backup.class, OpHistory.class, FmFavorite.class, FreezeType.class, ArchivedApp.class}, version = 8)
+@Database(entities = {App.class, LogFilter.class, Backup.class, OpHistory.class, FmFavorite.class, FreezeType.class, ArchivedApp.class}, version = 9)
 public abstract class AppsDb extends RoomDatabase {
     private static AppsDb sAppsDb;
 
@@ -67,10 +67,17 @@ public abstract class AppsDb extends RoomDatabase {
         }
     };
 
+    public static final Migration M_8_9 = new Migration(8, 9) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase db) {
+            db.execSQL("ALTER TABLE `archived_apps` ADD COLUMN `apk_path` TEXT");
+        }
+    };
+
     public static AppsDb getInstance() {
         if (sAppsDb == null) {
             sAppsDb = Room.databaseBuilder(ContextUtils.getContext(), AppsDb.class, "apps.db")
-                    .addMigrations(M_2_3, M_3_4, M_4_5, M_5_6, M_6_7, M_7_8)
+                    .addMigrations(M_2_3, M_3_4, M_4_5, M_5_6, M_6_7, M_7_8, M_8_9)
                     .fallbackToDestructiveMigrationOnDowngrade()
                     .build();
             try {

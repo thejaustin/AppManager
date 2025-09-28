@@ -20,9 +20,13 @@ public class ArchivedApp {
     @ColumnInfo(name = "archive_timestamp")
     public long archiveTimestamp;
 
-    public ArchivedApp(@NonNull String packageName, String appName, long archiveTimestamp) {
+    @ColumnInfo(name = "apk_path")
+    public String apkPath;
+
+    public ArchivedApp(@NonNull String packageName, String appName, long archiveTimestamp, String apkPath) {
         this.packageName = packageName;
         this.appName = appName;
         this.archiveTimestamp = archiveTimestamp;
+        this.apkPath = apkPath;
     }
 }

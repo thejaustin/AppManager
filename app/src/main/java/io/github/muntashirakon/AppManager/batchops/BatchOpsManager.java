@@ -898,14 +898,13 @@ public class BatchOpsManager {
                 // Get app info before uninstalling
                 ApplicationInfo appInfo = pm.getApplicationInfo(pair.getPackageName(), 0);
                 String appName = appInfo.loadLabel(pm).toString();
+                String apkPath = appInfo.sourceDir;
 
                 boolean success = false;
                 if (ShizukuUtils.isShizukuAvailable()) {
                     Integer exitCode = ShizukuUtils.runCommand("pm uninstall -k " + pair.getPackageName());
                     if (exitCode != null && exitCode == 0) {
                         success = true;
-                    } else {
-                        log("====> op=ARCHIVE, pkg=" + pair + ", exitCode=" + exitCode);
                     }
                 } else {
                     // Fallback to the old method if Shizuku is not available
@@ -914,7 +913,7 @@ public class BatchOpsManager {
                 }
 
                 if (success) {
-                    ArchivedApp archivedApp = new ArchivedApp(pair.getPackageName(), appName, System.currentTimeMillis());
+                    ArchivedApp archivedApp = new ArchivedApp(pair.getPackageName(), appName, System.currentTimeMillis(), apkPath);
                     archivedAppDao.insert(archivedApp);
                 } else {
                     failedPackages.add(pair);
