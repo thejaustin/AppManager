@@ -14,11 +14,7 @@ public class ShizukuUtils {
 
     public static boolean isShizukuAvailable() {
         try {
-            if (Shizuku.isPreV11()) {
-                return Shizuku.checkPermission(0) == android.content.pm.PackageManager.PERMISSION_GRANTED;
-            } else {
-                return Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED;
-            }
+            return Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED;
         } catch (IllegalStateException e) {
             return false;
         }
@@ -38,7 +34,7 @@ public class ShizukuUtils {
             return null;
         }
         try {
-            ShizukuRemoteProcess process = Shizuku.newProcess(new String[]{"sh", "-c", command}, null, null);
+            ShizukuRemoteProcess process = Shizuku.newProcess(new String[]{"sh", "-c", command}, null, "/");
             if (process != null) {
                 process.waitFor();
                 return process.exitValue();

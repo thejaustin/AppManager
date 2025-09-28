@@ -37,7 +37,7 @@ public class ArchivedAppsActivity extends BaseActivity {
     private void onRestoreClicked(ArchivedApp archivedApp) {
         if (archivedApp.apkPath != null) {
             io.github.muntashirakon.AppManager.apk.installer.PackageInstallerCompat installer = io.github.muntashirakon.AppManager.apk.installer.PackageInstallerCompat.getNewInstance();
-            installer.install(Uri.fromFile(new java.io.File(archivedApp.apkPath)));
+            installer.install(new io.github.muntashirakon.io.Path[]{io.github.muntashirakon.io.Paths.get(archivedApp.apkPath)}, null, null);
         } else {
             // Fallback to the old method if the apkPath is not available
             try {
