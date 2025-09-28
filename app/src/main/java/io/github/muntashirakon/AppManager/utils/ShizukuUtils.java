@@ -29,6 +29,7 @@ public class ShizukuUtils {
     }
 
     @Nullable
+    @SuppressWarnings("deprecation")
     public static Integer runCommand(@NonNull String command) {
         if (!isShizukuAvailable()) {
             return null;
