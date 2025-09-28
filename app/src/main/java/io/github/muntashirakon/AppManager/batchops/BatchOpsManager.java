@@ -905,6 +905,8 @@ public class BatchOpsManager {
                     Integer exitCode = ShizukuUtils.runCommand("pm uninstall -k " + pair.getPackageName());
                     if (exitCode != null && exitCode == 0) {
                         success = true;
+                    } else {
+                        log("====> op=ARCHIVE, pkg=" + pair + ", exitCode=" + exitCode);
                     }
                 } else {
                     // Fallback to the old method if Shizuku is not available

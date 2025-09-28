@@ -14,8 +14,12 @@ public class ShizukuUtils {
 
     public static boolean isShizukuAvailable() {
         try {
-            return Shizuku.isPreV11() ? Shizuku.checkPermission(0) == 0 : Shizuku.checkSelfPermission() == 0;
-        } catch (Exception e) {
+            if (Shizuku.isPreV11()) {
+                return Shizuku.checkPermission(0) == android.content.pm.PackageManager.PERMISSION_GRANTED;
+            } else {
+                return Shizuku.checkSelfPermission() == android.content.pm.PackageManager.PERMISSION_GRANTED;
+            }
+        } catch (IllegalStateException e) {
             return false;
         }
     }
