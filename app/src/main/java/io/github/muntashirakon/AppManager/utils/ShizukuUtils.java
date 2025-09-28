@@ -29,26 +29,15 @@ public class ShizukuUtils {
     }
 
     @Nullable
-    public static String runCommand(@NonNull String command) {
+    public static Integer runCommand(@NonNull String command) {
         if (!isShizukuAvailable()) {
             return null;
         }
         try {
             ShizukuRemoteProcess process = Shizuku.newProcess(new String[]{"sh", "-c", command}, null, null);
             if (process != null) {
-                // Read the output and error streams
-                java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(process.getInputStream()));
-                java.io.BufferedReader errorReader = new java.io.BufferedReader(new java.io.InputStreamReader(process.getErrorStream()));
-                StringBuilder output = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    output.append(line).append("\n");
-                }
-                while ((line = errorReader.readLine()) != null) {
-                    output.append(line).append("\n");
-                }
                 process.waitFor();
-                return output.toString();
+                return process.exitValue();
             }
         } catch (RemoteException | InterruptedException e) {
             return null;

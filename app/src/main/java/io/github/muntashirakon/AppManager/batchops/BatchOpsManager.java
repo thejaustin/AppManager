@@ -901,7 +901,7 @@ public class BatchOpsManager {
 
                 boolean success = false;
                 if (ShizukuUtils.isShizukuAvailable()) {
-                    Integer exitCode = ShizukuUtils.runCommand(ContextUtils.getContext(), "pm uninstall -k " + pair.getPackageName());
+                    Integer exitCode = ShizukuUtils.runCommand("pm uninstall -k " + pair.getPackageName());
                     if (exitCode != null && exitCode == 0) {
                         success = true;
                     } else {
@@ -918,8 +918,11 @@ public class BatchOpsManager {
                     archivedAppDao.insert(archivedApp);
                 } else {
                     failedPackages.add(pair);
-                    log("====> op=ARCHIVE, pkg=" + pair);
+                    log("====> op=ARCHIVE, pkg=" + pair + " failed");
                 }
+            } catch (PackageManager.NameNotFoundException e) {
+                failedPackages.add(pair);
+                log("====> op=ARCHIVE, pkg=" + pair + " not found", e);
             } catch (Exception e) {
                 failedPackages.add(pair);
                 log("====> op=ARCHIVE, pkg=" + pair, e);
