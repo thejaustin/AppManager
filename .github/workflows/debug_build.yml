@@ -39,7 +39,7 @@ jobs:
       - name: Inject run number
         run: sed -i -e 's|versionName "\([0-9\.]\+\)"|versionName "\1-${{ github.run_number }}"|' ./app/build.gradle
       - name: Build with Gradle
-        run: ./gradlew packageDebugUniversalApk
+        run: ./gradlew clean packageDebugUniversalApk
       - name: Rename the APK file
         run: mv ./app/build/outputs/apk_from_bundle/debug/app-debug-universal.apk ./${{ env.APP_NAME }}.apk
       - name: Store generated APK file
