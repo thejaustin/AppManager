@@ -6,6 +6,7 @@ import android.app.AppOpsManager
 import android.app.INotificationManager
 import android.content.ComponentName
 import android.content.Context
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Build
@@ -33,11 +34,13 @@ import io.github.muntashirakon.AppManager.rules.RulesImporter
 import io.github.muntashirakon.AppManager.rules.struct.*
 import io.github.muntashirakon.AppManager.runner.Runner
 import io.github.muntashirakon.AppManager.self.SelfPermissions
+import io.github.muntashirakon.AppManager.settings.Ops
 import io.github.muntashirakon.AppManager.ssaid.SsaidSettings
 import io.github.muntashirakon.AppManager.uri.UriManager
 import io.github.muntashirakon.AppManager.utils.*
 import io.github.muntashirakon.io.Path
 import io.github.muntashirakon.io.Paths
+import io.github.muntashirakon.io.SplitInputStream
 import io.github.muntashirakon.io.UidGidPair
 import java.io.Closeable
 import java.io.File
@@ -536,23 +539,55 @@ internal class RestoreOp @Throws(BackupException::class) constructor(
         }
         // Extract data to the data directory
         try {
-            val publicSourceDir = File(mPackageInfo!!.applicationInfo!!.publicSourceDir!!).parent
-            TarUtils.extract(
-                mBackupInfo.tarType, dataFiles, dataSourceFile, null, BackupUtils
-                    .getExcludeDirs(!mRequestedFlags.backupCache(), null), publicSourceDir
-            )
+            val isDebuggable = mPackageInfo?.applicationInfo?.let {
+                (it.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
+            } ?: false
+            val isInternalData = !dataDirectoryInfo.isExternal()
+
+            if (Ops.isAdb() && isDebuggable && isInternalData) {
+                // In ADB mode (shell UID = 2000), run-as lets us extract directly into the
+                // app's data dir as that app's UID/GID — no root chown needed afterward.
+                // ProcessBuilder would fail here because run-as rejects callers that aren't
+                // shell or root; Runner.runCommand() routes through the privileged IPC service
+                // which runs as shell, so run-as accepts it.
+                val pkgName = mPackageInfo!!.packageName
+                val destPath = dataSourceFile.getFilePath()!!
+                val result = SplitInputStream(dataFiles).use { sis ->
+                    Runner.runCommand(arrayOf("run-as", pkgName, "tar", "-xf", "-", "-C", destPath), sis)
+                }
+                if (!result.isSuccessful) {
+                    // run-as tar failed (app may not be installed yet, tar not in PATH, or app
+                    // not truly debuggable at extraction time); fall back to TarUtils, which
+                    // needs root or Shizuku for correct ownership.
+                    Log.w(TAG, "run-as tar extraction failed for $pkgName, falling back to TarUtils")
+                    val publicSourceDir = File(mPackageInfo!!.applicationInfo!!.publicSourceDir!!).parent
+                    TarUtils.extract(
+                        mBackupInfo.tarType, dataFiles, dataSourceFile, null, BackupUtils
+                            .getExcludeDirs(!mRequestedFlags.backupCache(), null), publicSourceDir
+                    )
+                }
+            } else {
+                val publicSourceDir = File(mPackageInfo!!.applicationInfo!!.publicSourceDir!!).parent
+                TarUtils.extract(
+                    mBackupInfo.tarType, dataFiles, dataSourceFile, null, BackupUtils
+                        .getExcludeDirs(!mRequestedFlags.backupCache(), null), publicSourceDir
+                )
+            }
         } catch (th: Throwable) {
             throw BackupException("Failed to restore data files for index $index.", th)
         }
         // Restore UID and GID
-        if (!Runner.runCommand(String.format(Locale.ROOT, "chown -R %d:%d "%s"", uidGidPair.uid, uidGidPair.gid, dataSourceFile.getFilePath())).isSuccessful) {
-            if (!Utils.isRoboUnitTest()) {
-                throw BackupException("Failed to restore ownership info for index $index.")
-            } // else Don't care about permissions
-        }
-        // Restore context
         if (!dataDirectoryInfo.isExternal()) {
-            Runner.runCommand(arrayOf("restorecon", "-R", dataSourceFile.getFilePath()!!))
+            val chownSuccess = Runner.runCommand(
+                String.format(Locale.ROOT, "chown -R %d:%d \"%s\"", uidGidPair.uid, uidGidPair.gid, dataSourceFile.getFilePath())
+            ).isSuccessful
+            if (!chownSuccess && !Utils.isRoboUnitTest() && !Ops.isAdb()) {
+                throw BackupException("Failed to restore ownership info for index $index.")
+            }
+            // Restore context
+            if (!Ops.isAdb()) {
+                Runner.runCommand(arrayOf("restorecon", "-R", dataSourceFile.getFilePath()!!))
+            }
         }
     }
 
