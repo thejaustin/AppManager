@@ -72,6 +72,7 @@ class MainListOptions : ListOptions() {
         const val FILTER_STOPPED_APPS = 1 shl 14
         const val FILTER_UNFROZEN_APPS = 1 shl 15
         const val FILTER_ARCHIVABLE_APPS = 1 shl 16
+        const val FILTER_DISABLED_APPS = 1 shl 17
 
         private val SORT_ITEMS_MAP = LinkedHashMap<Int, Int>().apply {
             put(SORT_BY_DOMAIN, R.string.sort_by_domain_type)
@@ -111,7 +112,8 @@ class MainListOptions : ListOptions() {
             put(FILTER_APPS_WITH_KEYSTORE, R.string.filter_apps_with_keystore)
             put(FILTER_APPS_WITH_SAF, R.string.filter_apps_with_saf)
             put(FILTER_APPS_WITH_SSAID, R.string.filter_apps_with_ssaid)
-            put(FILTER_STOPPED_APPS, R.string.filter_stopped_apps)
+            put(FILTER_STOPPED_APPS, R.string.filter_force_stopped_apps)
+            put(FILTER_DISABLED_APPS, R.string.filter_disabled_apps)
             put(FILTER_ARCHIVABLE_APPS, R.string.filter_archivable_apps)
         }
 
@@ -171,6 +173,11 @@ class MainListOptions : ListOptions() {
             }
             if (flags and FILTER_APPS_WITH_SSAID != 0) appTypeWithFlags = appTypeWithFlags or AppTypeOption.APP_TYPE_SSAID
             if (flags and FILTER_STOPPED_APPS != 0) appTypeWithFlags = appTypeWithFlags or AppTypeOption.APP_TYPE_STOPPED
+            if (flags and FILTER_DISABLED_APPS != 0) {
+                val option = FreezeOption()
+                option.setKeyValue("with_flags", FreezeOption.FREEZE_TYPE_DISABLED.toString())
+                filterItem.addFilterOption(option)
+            }
             if (flags and FILTER_ARCHIVABLE_APPS != 0) {
                 val option = ArchivableOption()
                 option.setKeyValue("archivable", null)
