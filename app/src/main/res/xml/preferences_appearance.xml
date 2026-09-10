@@ -2,87 +2,66 @@
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <PreferenceCategory
-        app:iconSpaceReserved="false"
-        app:title="@string/pref_app_theme">
-
+    <PreferenceCategory app:layout="@layout/m3_preference_category_empty">
         <Preference
-            app:icon="@drawable/ic_brush"
+            app:iconSpaceReserved="false"
             app:key="app_theme"
             app:title="@string/pref_app_theme"
             tools:summary="Follow system" />
 
         <SwitchPreferenceCompat
-            app:icon="@drawable/ic_eye"
+            app:iconSpaceReserved="false"
             app:key="app_theme_pure_black"
-            app:title="@string/pref_pure_black_theme"
-            app:summary="@string/pref_pure_black_theme_msg" />
-
-    </PreferenceCategory>
-
-    <PreferenceCategory
-        app:iconSpaceReserved="false"
-        app:title="@string/navigation">
+            app:summary="@string/pref_pure_black_theme_msg"
+            app:title="@string/pref_pure_black_theme" />
 
         <SwitchPreferenceCompat
-            app:icon="@drawable/ic_fast_forward"
-            app:key="use_bottom_bar"
-            app:title="@string/pref_use_bottom_bar"
-            app:summary="@string/pref_use_bottom_bar_msg"
-            app:defaultValue="true" />
+            app:iconSpaceReserved="false"
+            app:key="use_system_font"
+            app:summary="@string/pref_use_system_font_msg"
+            app:title="@string/pref_use_system_font" />
 
         <Preference
-            app:icon="@drawable/ic_drag"
+            app:iconSpaceReserved="false"
             app:key="layout_orientation"
             app:title="@string/pref_layout_direction"
             tools:summary="Left to right" />
 
     </PreferenceCategory>
 
-    <PreferenceCategory
-        app:iconSpaceReserved="false"
-        app:title="@string/features">
-
-        <SwitchPreferenceCompat
-            app:icon="@drawable/ic_code"
-            app:key="use_system_font"
-            app:title="@string/pref_use_system_font"
-            app:summary="@string/pref_use_system_font_msg" />
-
+    <PreferenceCategory app:layout="@layout/m3_preference_category_empty">
         <Preference
-            app:icon="@drawable/ic_check_circle"
+            app:iconSpaceReserved="false"
             app:key="enabled_features"
-            app:title="@string/enable_disable_features"
-            app:summary="@string/pref_enable_disable_features_msg" />
-
+            app:summary="@string/pref_enable_disable_features_msg"
+            app:title="@string/enable_disable_features" />
     </PreferenceCategory>
 
     <PreferenceCategory
         app:key="material_design"
         app:title="@string/pref_material_design"
-        app:iconSpaceReserved="false">
+        app:layout="@layout/m3_preference_category_empty">
 
         <Preference
-            app:icon="@drawable/circle_background"
+            app:iconSpaceReserved="false"
             app:key="corner_radius_preset"
             app:title="@string/pref_corner_radius_preset"
             app:summary="@string/pref_corner_radius_preset_msg"
             app:defaultValue="expressive" />
 
         <EditTextPreference
-            app:icon="@drawable/ic_edit"
+            app:iconSpaceReserved="false"
             app:key="corner_radius_custom"
             app:title="@string/pref_corner_radius_custom"
             app:summary="@string/pref_corner_radius_custom_msg"
             app:defaultValue="32" />
 
         <Preference
-            app:icon="@drawable/ic_data_usage"
+            app:iconSpaceReserved="false"
             app:key="app_size_display"
             app:title="@string/pref_app_size_display"
             app:summary="@string/pref_app_size_display_msg"
             app:defaultValue="full" />
 
     </PreferenceCategory>
-
 </PreferenceScreen>

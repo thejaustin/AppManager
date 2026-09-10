@@ -1,10 +1,8 @@
 .gradle/
 .idea/
-crowdin.properties
 local.properties
 .DS_Store
 build/
-app/preRelease/
 app/release/
 app/debug/
 app/keystore/
@@ -12,8 +10,8 @@ app/keystore.properties
 .env
 app/libs/am-common.jar
 toybox/src/main/jniLibs
-app/src/main/assets/am.jar
-app/src/main/assets/main.jar
+app/src/*/assets/am.jar
+app/src/*/assets/main.jar
 pids
 logs
 logs/
@@ -33,6 +31,5 @@ basement_dist
 *.bks
 *~
 scripts/KeyStore.sh
-
 .qwen/
 gha-creds-*.json

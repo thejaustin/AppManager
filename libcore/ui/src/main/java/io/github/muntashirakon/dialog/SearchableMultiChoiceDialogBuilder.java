@@ -17,9 +17,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
-import androidx.collection.ArraySet;
 import androidx.core.widget.TextViewCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.ListAdapter;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.color.MaterialColors;
@@ -30,8 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Objects;
 
 import io.github.muntashirakon.ui.R;
 import io.github.muntashirakon.util.AdapterUtils;
@@ -58,6 +58,32 @@ public class SearchableMultiChoiceDialogBuilder<T> {
 
     public interface OnMultiChoiceClickListener<T> {
         void onClick(DialogInterface dialog, int which, T item, boolean isChecked);
+    }
+
+    static class MultiChoiceItem<E> {
+        final int id;
+        @NonNull
+        final CharSequence name;
+        @NonNull
+        final E rawItem;
+        boolean isSelected;
+        boolean isDisabled;
+
+        MultiChoiceItem(int id, @NonNull CharSequence name, @NonNull E rawItem) {
+            this.id = id;
+            this.name = name;
+            this.rawItem = rawItem;
+            this.isSelected = false;
+            this.isDisabled = false;
+        }
+
+        MultiChoiceItem(@NonNull MultiChoiceItem<E> other) {
+            this.id = other.id;
+            this.name = other.name;
+            this.rawItem = other.rawItem;
+            this.isSelected = other.isSelected;
+            this.isDisabled = other.isDisabled;
+        }
     }
 
     public SearchableMultiChoiceDialogBuilder(@NonNull Context context, @NonNull List<T> items, @ArrayRes int itemNames) {
@@ -118,8 +144,8 @@ public class SearchableMultiChoiceDialogBuilder<T> {
         return mView;
     }
 
-    public SearchableMultiChoiceDialogBuilder<T> setOnMultiChoiceClickListener(@Nullable OnMultiChoiceClickListener<T>
-                                                                                       onMultiChoiceClickListener) {
+    public SearchableMultiChoiceDialogBuilder<T> setOnMultiChoiceClickListener(
+            @Nullable OnMultiChoiceClickListener<T> onMultiChoiceClickListener) {
         mOnMultiChoiceClickListener = onMultiChoiceClickListener;
         return this;
     }
@@ -244,155 +270,190 @@ public class SearchableMultiChoiceDialogBuilder<T> {
 
     private void triggerMultiChoiceClickListener(int index, boolean isChecked) {
         if (mDialog != null && mOnMultiChoiceClickListener != null) {
-            mOnMultiChoiceClickListener.onClick(mDialog, index, mAdapter.mItems.get(index), isChecked);
+            mOnMultiChoiceClickListener.onClick(mDialog, index, mAdapter.mMasterList.get(index).rawItem, isChecked);
         }
     }
 
-    class SearchableRecyclerViewAdapter extends RecyclerView.Adapter<SearchableRecyclerViewAdapter.ViewHolder> {
+    private static class ChoiceItemCallback<E> extends DiffUtil.ItemCallback<MultiChoiceItem<E>> {
+        @Override
+        public boolean areItemsTheSame(@NonNull MultiChoiceItem<E> oldItem, @NonNull MultiChoiceItem<E> newItem) {
+            return oldItem.id == newItem.id && Objects.equals(oldItem.rawItem, newItem.rawItem);
+        }
+
+        @Override
+        public boolean areContentsTheSame(@NonNull MultiChoiceItem<E> oldItem, @NonNull MultiChoiceItem<E> newItem) {
+            return oldItem.isSelected == newItem.isSelected
+                    && oldItem.isDisabled == newItem.isDisabled
+                    && Objects.equals(oldItem.name.toString(), newItem.name.toString());
+        }
+    }
+
+    class SearchableRecyclerViewAdapter extends ListAdapter<MultiChoiceItem<T>, SearchableRecyclerViewAdapter.ViewHolder> {
         @NonNull
-        private final List<CharSequence> mItemNames;
+        final List<MultiChoiceItem<T>> mMasterList = new ArrayList<>();
         @NonNull
-        private final List<T> mItems;
+        final List<T> mNotFoundItems = new ArrayList<>();
         @NonNull
-        private final List<T> mNotFoundItems = new ArrayList<>();
-        @NonNull
-        private final ArrayList<Integer> mFilteredItems = new ArrayList<>();
-        @NonNull
-        private final Set<Integer> mSelectedItems = new ArraySet<>();
-        private final Set<Integer> mDisabledItems = new ArraySet<>();
+        List<MultiChoiceItem<T>> mCurrentVisibleList = new ArrayList<>();
         @LayoutRes
         private final int mLayoutId;
+        @Nullable
+        private CharSequence mCurrentQuery = "";
 
         SearchableRecyclerViewAdapter(@NonNull List<CharSequence> itemNames, @NonNull List<T> items, int layoutId) {
-            mItemNames = itemNames;
-            mItems = items;
+            super(new ChoiceItemCallback<>());
             mLayoutId = layoutId;
-            new Thread(() -> {
-                synchronized (mFilteredItems) {
-                    for (int i = 0; i < items.size(); ++i) {
-                        mFilteredItems.add(i);
-                    }
-                }
-            }, "searchable_multi_choice_dialog").start();
+            int size = Math.min(itemNames.size(), items.size());
+            for (int i = 0; i < size; ++i) {
+                mMasterList.add(new MultiChoiceItem<>(i, itemNames.get(i), items.get(i)));
+            }
+            dispatchFilteredList();
         }
 
         void setFilteredItems(CharSequence constraint) {
-            Locale locale = Locale.getDefault();
-            synchronized (mFilteredItems) {
-                int previousCount = mFilteredItems.size();
-                mFilteredItems.clear();
-                for (int i = 0; i < mItems.size(); ++i) {
-                    if (mItemNames.get(i).toString().toLowerCase(locale).contains(constraint)
-                            || mItems.get(i).toString().toLowerCase(Locale.ROOT).contains(constraint)) {
-                        mFilteredItems.add(i);
+            mCurrentQuery = constraint;
+            dispatchFilteredList();
+            checkSelections();
+        }
+
+        private void dispatchFilteredList() {
+            if (mCurrentQuery == null || mCurrentQuery.length() == 0) {
+                mCurrentVisibleList = new ArrayList<>(mMasterList);
+            } else {
+                Locale locale = Locale.getDefault();
+                String query = mCurrentQuery.toString().toLowerCase(locale);
+                List<MultiChoiceItem<T>> filteredList = new ArrayList<>();
+                for (MultiChoiceItem<T> item : mMasterList) {
+                    if (item.name.toString().toLowerCase(locale).contains(query)
+                            || item.rawItem.toString().toLowerCase(Locale.ROOT).contains(query)) {
+                        filteredList.add(item);
                     }
                 }
-                checkSelections();
-                AdapterUtils.notifyDataSetChanged(this, previousCount, mFilteredItems.size());
+                mCurrentVisibleList = filteredList;
             }
+            submitList(mCurrentVisibleList);
         }
 
         ArrayList<T> getSelectedItems() {
             ArrayList<T> selections = new ArrayList<>(mNotFoundItems);
-            synchronized (mSelectedItems) {
-                for (int item : mSelectedItems) {
-                    selections.add(mItems.get(item));
+            for (MultiChoiceItem<T> item : mMasterList) {
+                if (item.isSelected) {
+                    selections.add(item.rawItem);
                 }
             }
             return selections;
         }
 
         void addSelectedItems(@Nullable List<T> selectedItems) {
-            if (selectedItems != null) {
-                for (T item : selectedItems) {
-                    int index = mItems.indexOf(item);
-                    if (index != -1) {
-                        synchronized (mSelectedItems) {
-                            mSelectedItems.add(index);
+            if (selectedItems == null) return;
+            boolean listUpdated = false;
+            for (T item : selectedItems) {
+                boolean found = false;
+                for (int i = 0; i < mMasterList.size(); i++) {
+                    MultiChoiceItem<T> wrapper = mMasterList.get(i);
+                    if (Objects.equals(wrapper.rawItem, item)) {
+                        if (!wrapper.isSelected) {
+                            MultiChoiceItem<T> newItem = new MultiChoiceItem<>(wrapper);
+                            newItem.isSelected = true;
+                            mMasterList.set(i, newItem);
+                            listUpdated = true;
                         }
-                    } else mNotFoundItems.add(item);
+                        found = true;
+                        break;
+                    }
                 }
+                if (!found && !mNotFoundItems.contains(item)) {
+                    mNotFoundItems.add(item);
+                }
+            }
+            if (listUpdated) {
+                dispatchFilteredList();
             }
         }
 
         void addSelectedIndexes(@Nullable int[] selectedIndexes) {
-            if (selectedIndexes != null) {
-                for (int index : selectedIndexes) {
-                    synchronized (mSelectedItems) {
-                        mSelectedItems.add(index);
-                    }
+            if (selectedIndexes == null) {
+                return;
+            }
+            for (int index : selectedIndexes) {
+                if (index >= 0 && index < mMasterList.size()) {
+                    mMasterList.get(index).isSelected = true;
                 }
             }
+            dispatchFilteredList();
         }
 
         void removeSelectedIndexes(@Nullable int[] selectedIndexes) {
-            if (selectedIndexes != null) {
-                for (int index : selectedIndexes) {
-                    synchronized (mSelectedItems) {
-                        mSelectedItems.remove(index);
-                    }
+            if (selectedIndexes == null) {
+                return;
+            }
+            for (int index : selectedIndexes) {
+                if (index >= 0 && index < mMasterList.size()) {
+                    mMasterList.get(index).isSelected = false;
                 }
             }
+            dispatchFilteredList();
         }
 
         void addDisabledItems(@Nullable List<T> disabledItems) {
-            if (disabledItems != null) {
-                for (T item : disabledItems) {
-                    int index = mItems.indexOf(item);
-                    if (index != -1) {
-                        synchronized (mDisabledItems) {
-                            mDisabledItems.add(index);
-                        }
+            if (disabledItems == null) {
+                return;
+            }
+            for (T item : disabledItems) {
+                for (MultiChoiceItem<T> wrapper : mMasterList) {
+                    if (Objects.equals(wrapper.rawItem, item)) {
+                        wrapper.isDisabled = true;
+                        break;
                     }
                 }
             }
+            dispatchFilteredList();
         }
 
         void selectAll() {
-            synchronized (mSelectedItems) {
-                synchronized (mFilteredItems) {
-                    List<Integer> newSelections = new ArrayList<>();
-                    for (int index : mFilteredItems) {
-                        if (!mSelectedItems.contains(index)) {
-                            newSelections.add(index);
-                        }
-                    }
-                    mSelectedItems.addAll(newSelections);
-                    checkSelections();
-                    for (int index : newSelections) {
-                        triggerMultiChoiceClickListener(index, true);
-                    }
-                    notifyItemRangeChanged(0, getItemCount(), AdapterUtils.STUB);
+            boolean listUpdated = false;
+            for (MultiChoiceItem<T> item : mCurrentVisibleList) {
+                if (!item.isSelected) {
+                    MultiChoiceItem<T> newItem = new MultiChoiceItem<>(item);
+                    newItem.isSelected = true;
+                    mMasterList.set(newItem.id, newItem);
+                    triggerMultiChoiceClickListener(newItem.id, true);
+                    listUpdated = true;
                 }
+            }
+            if (listUpdated) {
+                dispatchFilteredList();
+                checkSelections();
             }
         }
 
         void deselectAll() {
-            synchronized (mSelectedItems) {
-                synchronized (mFilteredItems) {
-                    List<Integer> oldSelections = new ArrayList<>();
-                    for (int index : mFilteredItems) {
-                        if (mSelectedItems.contains(index)) {
-                            oldSelections.add(index);
-                        }
-                    }
-                    //noinspection SlowAbstractSetRemoveAll
-                    mSelectedItems.removeAll(oldSelections);
-                    checkSelections();
-                    for (int index : oldSelections) {
-                        triggerMultiChoiceClickListener(index, false);
-                    }
-                    notifyItemRangeChanged(0, getItemCount(), AdapterUtils.STUB);
+            boolean listUpdated = false;
+            for (MultiChoiceItem<T> item : mCurrentVisibleList) {
+                if (item.isSelected) {
+                    MultiChoiceItem<T> newItem = new MultiChoiceItem<>(item);
+                    newItem.isSelected = false;
+                    mMasterList.set(newItem.id, newItem);
+                    triggerMultiChoiceClickListener(newItem.id, false);
+                    listUpdated = true;
                 }
+            }
+            if (listUpdated) {
+                dispatchFilteredList();
+                checkSelections();
             }
         }
 
         boolean areAllSelected() {
-            synchronized (mSelectedItems) {
-                synchronized (mFilteredItems) {
-                    return mSelectedItems.containsAll(mFilteredItems);
+            if (mCurrentVisibleList.isEmpty()) {
+                return false;
+            }
+            for (MultiChoiceItem<T> item : mCurrentVisibleList) {
+                if (!item.isSelected) {
+                    return false;
                 }
             }
+            return true;
         }
 
         @NonNull
@@ -404,39 +465,19 @@ public class SearchableMultiChoiceDialogBuilder<T> {
 
         @Override
         public void onBindViewHolder(@NonNull SearchableRecyclerViewAdapter.ViewHolder holder, int position) {
-            Integer index;
-            synchronized (mFilteredItems) {
-                index = mFilteredItems.get(position);
-            }
-            final AtomicBoolean selected;
-            synchronized (mSelectedItems) {
-                selected = new AtomicBoolean(mSelectedItems.contains(index));
-            }
-            holder.item.setText(mItemNames.get(index));
+            MultiChoiceItem<T> item = getItem(position);
+            holder.item.setText(item.name);
             holder.item.setTextIsSelectable(mIsTextSelectable);
-            synchronized (mDisabledItems) {
-                holder.item.setEnabled(!mDisabledItems.contains(index));
-            }
-            holder.item.setChecked(selected.get());
+            holder.item.setEnabled(!item.isDisabled);
+            holder.item.setChecked(item.isSelected);
             holder.item.setOnClickListener(v -> {
-                synchronized (mSelectedItems) {
-                    boolean isSelected = selected.get();
-                    if (isSelected) {
-                        mSelectedItems.remove(index);
-                    } else mSelectedItems.add(index);
-                    selected.set(!isSelected);
-                    holder.item.setChecked(!isSelected);
-                    checkSelections();
-                    triggerMultiChoiceClickListener(index, selected.get());
-                }
+                MultiChoiceItem<T> newItem = new MultiChoiceItem<>(item);
+                newItem.isSelected = !item.isSelected;
+                mMasterList.set(newItem.id, newItem);
+                dispatchFilteredList();
+                checkSelections();
+                triggerMultiChoiceClickListener(newItem.id, newItem.isSelected);
             });
-        }
-
-        @Override
-        public int getItemCount() {
-            synchronized (mFilteredItems) {
-                return mFilteredItems.size();
-            }
         }
 
         class ViewHolder extends RecyclerView.ViewHolder {

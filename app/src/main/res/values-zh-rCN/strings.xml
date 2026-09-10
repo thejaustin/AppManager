@@ -70,8 +70,8 @@
     <string name="sdk_max">目标</string>
     <string name="sdk_flags">标志位(Flags)</string>
     <string name="more_info">更多信息</string>
-    <string name="date_installed">安装时间</string>
-    <string name="date_updated">更新时间</string>
+    <string name="date_installed">安装日期</string>
+    <string name="date_updated">更新日期</string>
     <string name="installer_app">安装来源</string>
     <string name="user_id">用户 ID</string>
     <string name="main_activity">主活动</string>
@@ -114,7 +114,7 @@
     <string name="word_wrap">自动换行</string>
     <string name="class_viewer">类查看器</string>
     <string name="toggle_class_listing">切换类列表</string>
-    <string name="found_trackers">已找到跟踪器:</string>
+    <string name="found_trackers">找到跟踪器：</string>
     <string name="tracker_details">跟踪器详细信息</string>
     <string name="tracker_classes">跟踪器类</string>
     <string name="all_classes">全部类型</string>
@@ -154,7 +154,7 @@
     <string name="updated_app">已更新</string>
     <string name="debuggable">可调试</string>
     <string name="test_only">仅测试</string>
-    <string name="shared_prefs">共享首选项(Shared Prefs)</string>
+    <string name="shared_prefs">共享的首选项</string>
     <string name="databases">数据库</string>
     <string name="save">保存</string>
     <string name="discard">放弃</string>
@@ -173,7 +173,7 @@
     <string name="add_item">新增项目</string>
     <string name="done">已完成</string>
     <string name="type_boolean">布尔值(Boolean)</string>
-    <string name="type_float">浮点数(Decimal Number/Float)</string>
+    <string name="type_float">浮点数</string>
     <string name="type_int">整型(Integer)</string>
     <string name="type_long">长整型(Long integer)</string>
     <string name="type_string">字符串(Characters/String)</string>
@@ -195,7 +195,7 @@
     <string name="storage_and_cache">存储和缓存</string>
     <string name="total_size">总计</string>
     <string name="app_size">应用程序</string>
-    <string name="app_ops">App Ops</string>
+    <string name="app_ops">程序操作</string>
     <string name="no_app_ops">无 AppOps 权限</string>
     <string name="failed_to_enable_op">无法启用请求的 AppOps 权限</string>
     <string name="failed_to_disable_op">无法禁用请求的 AppOps</string>
@@ -233,7 +233,7 @@
     <string name="pid_and_ppid">进程ID: %1$d, 父进程 ID: %2$d</string>
     <string name="memory_virtual_memory">内存: %1$s, 虚拟内存: %2$s</string>
     <string name="user_and_uid">用户: <xliff:g id="user_name" example="root">%1$s</xliff:g> (<xliff:g id="user_id" example="0">%2$d</xliff:g>)</string>
-    <string name="clear_data">删除数据</string>
+    <string name="clear_data">清除数据</string>
     <string name="backup_restore">备份/还原</string>
     <string name="disable_background">防止后台操作</string>
     <string name="export_blocking_rules">导出屏蔽规则</string>
@@ -255,8 +255,8 @@
     <string name="mode">模式</string>
     <string name="running">运行中</string>
     <string name="duration">持续时间</string>
-    <string name="accept_time">接受的时间</string>
-    <string name="reject_time">拒绝的时间</string>
+    <string name="accept_time">接受时间</string>
+    <string name="reject_time">拒绝时间</string>
     <string name="ago">之前</string>
     <string name="pref_import">导入</string>
     <string name="pref_export">导出</string>
@@ -269,7 +269,7 @@
     <string name="touchscreen">触摸屏</string>
     <string name="pref_export_msg">导出应用管理器中配置的阻止规则到外部存储。</string>
     <string name="pref_import_msg">导入先前从应用管理器导出的拦截规则。</string>
-    <string name="pref_import_watt_msg">从 Watt 导入阻止规则，每个文件都包含针对单个命名包的规则，诸如 <tt> packagename.xml</tt>等。</string>
+    <string name="pref_import_watt_msg">从 Watt 导入阻止规则，每个含针对单个包规则的文件名称为 <tt>packagename.xml</tt>等。</string>
     <string name="pref_import_blocker_msg">从 Blocker 导入拦截规则，每个文件包含单个软件包的规则。</string>
     <string name="pref_app_theme">应用主题</string>
     <string name="follow_system">跟随系统</string>
@@ -293,7 +293,7 @@
     <string name="sort_by_denied_permissions">拒绝优先</string>
     <string name="deny_dangerous_permissions">拒绝有危险的权限</string>
     <string name="sort_by_tracker_components">跟踪器优先</string>
-    <string name="unknown_op">未知的操作</string>
+    <string name="unknown_op">未知操作</string>
     <plurals name="alert_failed_to_disable_trackers">
         <item quantity="other">无法禁用来自%1$d个应用的跟踪器</item>
     </plurals>
@@ -418,7 +418,7 @@
     <string name="installer_error_session_commit">不能提交APK文件</string>
     <string name="installer_error_session_abandon">无法中断安装包会话</string>
     <string name="backup_apk_files">APK 文件</string>
-    <string name="backup_obb_media">OBB和媒体文件</string>
+    <string name="backup_obb_media">OBB 和媒体文件</string>
     <string name="failed_to_extract_obb_files">无法提取OBB文件</string>
     <string name="obb_files_extracted_successfully">已提取OBB文件</string>
     <string name="backup_multiple">备份多个应用</string>
@@ -443,16 +443,16 @@
     <string name="unknown_split_for_feature"><xliff:g id="split_name" example="some_split">%1$s</xliff:g> 用于特性 <xliff:g id="feature_name" example="Visualizer">%2$s</xliff:g></string>
     <string name="density_split_for_feature"><xliff:g id="split_name" example="xxdpi">%1$s</xliff:g> (<xliff:g id="dpi_no" example="480">%2$d</xliff:g> DPI) 资源, 用于特性 <xliff:g id="feature_name" example="Visualizer">%3$s</xliff:g></string>
     <string name="density_split_for_base_apk"><xliff:g id="split_name" example="xxdpi">%1$s</xliff:g> (<xliff:g id="dpi_no" example="480">%2$d</xliff:g> DPI) 资源, 用于基础APK</string>
-    <string name="unknown_split_for_base_apk"><xliff:g id="split_name" example="some_split">%1$s</xliff:g>拆分，用于基础 APK</string>
+    <string name="unknown_split_for_base_apk">基础 APK 的 <xliff:g id="split_name" example="some_split">%1$s</xliff:g> 拆分</string>
     <string name="touchscreen_finger">手指</string>
     <string name="required">必需的</string>
     <string name="orientation_sensor">根据物理方向传感器确定方向</string>
     <string name="orientation_no_sensor">无传感器</string>
     <string name="orientation_locked">已锁定</string>
     <string name="launch_mode_multiple">多个</string>
-    <string name="locale_split_for_base_apk"><xliff:g id="split_name" example="English"> %1$s</xliff:g>语言环境，用于基础APK</string>
+    <string name="locale_split_for_base_apk"><xliff:g id="split_name" example="English"> %1$s</xliff:g> 语言环境，用于基础APK</string>
     <string name="locale_split_for_feature"><xliff:g id="split_name" example="English">%1$s</xliff:g> 语言环境, 用于特性 <xliff:g id="feature_name" example="Visualizer">%2$s</xliff:g></string>
-    <string name="abi_split_for_base_apk"><xliff:g id="split_name" example="arm64_v8a">%1$s</xliff:g>代码，属于基础APK</string>
+    <string name="abi_split_for_base_apk"><xliff:g id="split_name" example="arm64_v8a">%1$s</xliff:g> 代码，属于基础APK</string>
     <string name="abi_split_for_feature"><xliff:g id="split_name" example="arm64_v8a">%1$s</xliff:g> 代码, 用于 <xliff:g id="feature_name" example="Visualizer">%2$s</xliff:g></string>
     <string name="touchscreen_stylus">触控笔</string>
     <string name="open_pgp_provider">OpenPGP 提供商</string>
@@ -507,8 +507,8 @@
     <string name="critical_exts">关键扩展</string>
     <string name="dsa_affine_y">仿射 y 坐标</string>
     <string name="dsa_affine_x">仿射 x 坐标</string>
-    <string name="rsa_modulus">RSA模数</string>
-    <string name="rsa_exponent">RSA指数</string>
+    <string name="rsa_modulus">RSA 模数</string>
+    <string name="rsa_exponent">RSA 指数</string>
     <string name="format">格式</string>
     <string name="public_key">公钥</string>
     <string name="algorithm">算法</string>
@@ -527,7 +527,7 @@
     <string name="filter_apps_with_backups">有备份</string>
     <string name="sort_by_backup">已备份应用优先</string>
     <string name="failed_to_uninstall_updates">无法卸载更新,它属于 <xliff:g id="app_name" example="App Manager">%1$s</xliff:g>.</string>
-    <string name="update_uninstalled_successfully">用于 <xliff:g id="app_name" example="App Manager">%1$s</xliff:g>更新已被卸载.</string>
+    <string name="update_uninstalled_successfully"><xliff:g id="app_name" example="App Manager">%1$s</xliff:g> 的更新已被卸载.</string>
     <string name="uninstall_updates">卸载更新</string>
     <string name="launch_mode_single_top">栈顶</string>
     <string name="only_install">仅安装</string>
@@ -695,7 +695,7 @@
     <string name="backup_rules_description">备份 App Manager 内配置的规则。<font fgcolor="#ff0000">取决于权限，并非所有规则都可以在还原期间被重新应用。</font></string>
     <string name="backup_extras_description">备份应用权限、节电和数据使用选项、MagiskHide 状态、SSAID 等。<font fgcolor="#ff0000">取决于权限，并非所有提取的应用都可以被还原。</font></string>
     <string name="backup_extras">附加</string>
-    <string name="backup_cache_description">备份<b>缓存</b>、<b>no_cache</b> 和 <b>no_backup</b> 文件夹。</string>
+    <string name="backup_cache_description">备份<b>cache</b>、<b>no_cache</b> 和 <b>no_backup</b> 文件夹。</string>
     <string name="backup_obb_media_description">备份 OBB 和媒体文件夹。</string>
     <string name="backup_external_data_description">备份外部数据文件夹。</string>
     <string name="backup_internal_data_description">备份数据文件夹。如果选中，将默认备份内部数据文件夹。</string>
@@ -712,7 +712,7 @@
     <string name="enforcing">强制</string>
     <string name="failed_to_enable_magisk_hide">无法启用 MagiskHide</string>
     <string name="failed_to_disable_magisk_hide">无法禁用 MagiskHide</string>
-    <string name="disable_background_run_description">将<i>忽略</i>模式设置到下列应用操作：<tt>RUN_IN_BACKGROUND</tt>（从 Android 7.0 起）和 <tt>RUN_ANY_IN_BACKGROUND</tt>（从 Android 9 起）。</string>
+    <string name="disable_background_run_description">将<i>忽略</i>模式设置到下列 app ops：<tt>RUN_IN_BACKGROUND</tt>（从 Android 7.0 起）和 <tt>RUN_ANY_IN_BACKGROUND</tt>（从 Android 9 起）。</string>
     <plurals name="no_of_components">
         <item quantity="other">%1$d 个组件</item>
     </plurals>
@@ -780,7 +780,7 @@
     <string name="type_long_array">长整型数组</string>
     <string name="type_int_array_list">整型列表</string>
     <string name="type_int_array">整型数组</string>
-    <string name="type_component_name">组件名(Component Name)</string>
+    <string name="type_component_name">组件名</string>
     <string name="type_null">空(null)</string>
     <string name="user_with_id">用户：<xliff:g id="user_id" example="0">%1$d</xliff:g></string>
     <string name="installed_apps">已安装的应用</string>
@@ -865,7 +865,7 @@
     <string name="open">打开</string>
     <string name="pref_cat_appearance">外观</string>
     <string name="pref_cat_advanced">高级</string>
-    <string name="pref_buffer_title">日志缓冲区(s)</string>
+    <string name="pref_buffer_title">日志缓冲</string>
     <string name="pref_cat_configuration">配置</string>
     <string name="pref_default_log_level_title">默认日志级别</string>
     <string name="pref_default_log_level_summary">启动时、打开文件时和记录时的日志级别。</string>
@@ -1341,17 +1341,14 @@
     <string name="apply_profile">应用配置文件“%1$s”</string>
     <string name="tap_to_open_notification_settings">轻按隐藏</string>
     <string name="change_owner_uid">更改所有者 （UID）</string>
-    <string name="action_checking">检查中…</string>
     <string name="installer_options">安装器选项</string>
     <string name="pref_enable_persistent_session">让 App Manager 在后台运行</string>
-    <string name="scan_report_from_pithus">Pithus 报告</string>
     <string name="pref_set_home">设置主目录</string>
     <string name="module_name">模块名</string>
     <string name="copy_profile_id">复制配置 ID</string>
     <string name="profile_id">配置 ID</string>
     <string name="xposed_module_info">Xposed 模块信息</string>
     <string name="pref_enable_auto_lock">自动锁定</string>
-    <string name="report_not_available">不可用</string>
     <string name="pref_enable_auto_lock_msg">当设备锁定时同时锁定 App Manager 。</string>
     <string name="pref_files_remember_last_path">记住上次打开的路径及其位置</string>
     <string name="change_group_gid">更改组（GID）</string>
@@ -1396,8 +1393,7 @@
     <string name="mode_of_op_custom_command_title">自定义命令</string>
     <string name="mode_of_op_custom_command">如果您无法使用任何模式，您可以在任何受支持的 shell 中运行以下命令，以在特权模式下运行App Manager：</string>
     <string name="finder_title">访达</string>
-    <string name="mode_of_op_alternative_custom_command">如果运行以上命令遇到“permission denied”错误，请运行下列命令：</string>
-    <string name="actual_installer">实际安装者</string>
+    <string name="actual_installer">实际安装程序</string>
     <string name="apk_source">APK 源</string>
     <string name="backup_cache">缓存</string>
     <string name="pref_use_system_font">使用系统字体</string>
@@ -1436,4 +1432,43 @@
     <string name="title_shortcut_for_frozen_app">冻结的应用</string>
     <string name="title_overlay">遮罩</string>
     <string name="message_shortcut_for_frozen_app">对应于该快捷方式的应用似乎已被冻结。临时解冻并打开该快捷方式？</string>
+    <string name="filters">过滤器</string>
+    <string name="icon">图标</string>
+    <string name="preview">预览</string>
+    <string name="debloat_removal_unsafe">不安全</string>
+    <string name="sort_by_cpu_time">CPU 时间</string>
+    <string name="pref_request_update_ownership">请求“更新所有权”</string>
+    <string name="pref_default_package_source">默认的包来源</string>
+    <string name="pref_set_origin">设置包来源和 URI</string>
+    <string name="pref_request_update_ownership_description">在初始安装期间将安装器应用设为“更新所有者”防止其他安装器在无用户交互的情况下安装应用。</string>
+    <string name="pref_set_origin_description">记录要安装应用的来源，信息由\"应用信息“标签页中的”APK 源“报告</string>
+    <string name="package_source_store">应用商店</string>
+    <string name="package_source_local_file">本地文件</string>
+    <string name="package_source_downloaded_file">下载的文件</string>
+    <string name="package_source_other">其他</string>
+    <string name="pref_disable_apk_verification">禁用包验证</string>
+    <string name="pref_disable_apk_verification_description">请求安装器在安装时跳过运行包验证工具（如 Play Protect）。</string>
+    <string name="adb_data">ADB 数据</string>
+    <string name="adb_data_description">用 ADB 格式备份数据。此操作替代”内部数据“和”外部数据“选项。</string>
+    <string name="filter_unfrozen_apps">解冻应用</string>
+    <string name="goto_previous">上一个</string>
+    <string name="usage_this_week">本周</string>
+    <string name="usage_last_week">上周</string>
+    <string name="bar_chart_content_description">有 %d 个数据点的条形图。</string>
+    <string name="memory_usage_accessibility_description">系统当前在使用 %s 内存，总内存 %s，可用内存为 %s。在已用内存中，应用正在使用 %s，%s 已缓存，%s 用作内存缓冲。</string>
+    <string name="usage_bar_chart_y_axis_label_minute">%.0f 分钟</string>
+    <string name="usage_bar_chart_y_axis_label_hour">%.0f 小时</string>
+    <string name="usage_daily_bar_chart_accessibility_description">%1$s 的使用时长为 %2$.0f 分钟。见 %4$d 根条形图中的第 %3$d 根</string>
+    <string name="usage_weekly_hours_bar_chart_accessibility_description">%1$s 的使用时长为 %2$.l 个小时。见 %4$d 根条形图中的第 %3$d 根</string>
+    <string name="usage_weekly_minutes_bar_chart_accessibility_description">%1$s 的使用时长为 %2$.0f 分钟。见 %4$d 根条形图中第 %3$d 根</string>
+    <string name="usage_bar_chart_tooltip_minutes">%1$s • %2$.0f 分钟</string>
+    <string name="usage_bar_chart_tooltip_hours">%1$s • %2$.1f 小时</string>
+    <string name="modify_last_modification_time">修改上次更改时间</string>
+    <string name="modify_last_access_time">修改上次访问时间</string>
+    <string name="change_id">更改 ID</string>
+    <string name="memory_usage_unavailable">内存使用量当前不可用。</string>
+    <string name="swap_usage_accessibility_description">系统已经给 swap 分配了 %s，当前正使用 %s。</string>
+    <string name="selected_items_accessibility_description">选中了 %d 项，共 %d 项</string>
+    <string name="adb_local_server_port">ADB 本地服务器端口</string>
+    <string name="waiting_for_wifi">正等待 Wi-Fi</string>
 </resources>

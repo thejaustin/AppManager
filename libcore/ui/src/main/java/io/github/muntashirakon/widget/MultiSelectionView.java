@@ -29,6 +29,9 @@ import androidx.core.view.OnApplyWindowInsetsListener;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.customview.view.AbsSavedState;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.transition.Transition;
 import androidx.transition.TransitionManager;
@@ -38,11 +41,12 @@ import com.google.android.material.internal.ThemeEnforcement;
 import com.google.android.material.transition.MaterialSharedAxis;
 
 import java.lang.reflect.Field;
+import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import io.github.muntashirakon.multiselection.MultiSelectionActionsView;
 import io.github.muntashirakon.ui.R;
-import io.github.muntashirakon.util.AdapterUtils;
 import io.github.muntashirakon.util.UiUtils;
 
 @SuppressLint("RestrictedApi")
@@ -87,7 +91,7 @@ public class MultiSelectionView extends MaterialCardView implements OnApplyWindo
     private int mSelectionBottomPadding;
     private boolean mInSelectionMode = false;
     @Nullable
-    private Adapter<?> mAdapter;
+    private Adapter<?, ?> mAdapter;
     @Nullable
     private OnSelectionChangeListener mSelectionChangeListener;
     @Nullable
@@ -304,7 +308,7 @@ public class MultiSelectionView extends MaterialCardView implements OnApplyWindo
         return mSelectionBottomPadding;
     }
 
-    public void setAdapter(@NonNull Adapter<?> adapter) {
+    public void setAdapter(@NonNull Adapter<?, ?> adapter) {
         mAdapter = adapter;
         // Set listeners
         adapter.setOnLayoutChangeListener((v, rect, oldRect) -> toggleSelectionActions(rect.height()));
@@ -349,7 +353,6 @@ public class MultiSelectionView extends MaterialCardView implements OnApplyWindo
         mSelectionBottomPadding = 0;
         mInSelectionMode = false;
         if (mAdapter != null) {
-            //noinspection PointlessNullCheck
             if (mAdapter.mRecyclerView != null
                     && mAdapter.mRecyclerView.getFitsSystemWindows()
                     && mLastInsets != null) {
@@ -452,7 +455,9 @@ public class MultiSelectionView extends MaterialCardView implements OnApplyWindo
         setLayoutParams(params);
     }
 
-    public abstract static class Adapter<VH extends ViewHolder> extends RecyclerView.Adapter<VH> implements View.OnLayoutChangeListener {
+    public abstract static class Adapter<T, VH extends ViewHolder> extends ListAdapter<T, VH> implements View.OnLayoutChangeListener {
+        private static final Object PAYLOAD_SELECTION_CHANGED = new Object();
+
         private interface OnSelectionChangeListener {
             @UiThread
             void onSelectionChange();
@@ -471,9 +476,11 @@ public class MultiSelectionView extends MaterialCardView implements OnApplyWindo
         @Nullable
         private RecyclerView mRecyclerView;
         private int mDefaultBottomPadding;
+        @Nullable
+        private Parcelable mPreFilterScrollState;
 
-        public Adapter() {
-            setHasStableIds(true);
+        public Adapter(@NonNull DiffUtil.ItemCallback<T> diffCallback) {
+            super(diffCallback);
         }
 
         @AnyThread
@@ -542,13 +549,13 @@ public class MultiSelectionView extends MaterialCardView implements OnApplyWindo
             }
             if (isSelected(position)) {
                 if (deselect(position)) {
-                    notifyItemChanged(position, AdapterUtils.STUB);
+                    notifyItemChanged(position, PAYLOAD_SELECTION_CHANGED);
                     notifySelectionChange();
                 }
             } else {
                 if (select(position)) {
                     notifySelectionChange();
-                    notifyItemChanged(position, AdapterUtils.STUB);
+                    notifyItemChanged(position, PAYLOAD_SELECTION_CHANGED);
                 }
             }
         }
@@ -569,7 +576,7 @@ public class MultiSelectionView extends MaterialCardView implements OnApplyWindo
             notifySelectionChange();
             int selSize = (selEnd - selStart) + 1;
             if (selSize > 0) {
-                notifyItemRangeChanged(selStart, selSize, AdapterUtils.STUB);
+                notifyItemRangeChanged(selStart, selSize, PAYLOAD_SELECTION_CHANGED);
             }
         }
 
@@ -578,7 +585,7 @@ public class MultiSelectionView extends MaterialCardView implements OnApplyWindo
         public void deselectAll() {
             for (int position = 0; position < getItemCount(); ++position) {
                 if (isSelectable(position) && isSelected(position) && deselect(position)) {
-                    notifyItemChanged(position, AdapterUtils.STUB);
+                    notifyItemChanged(position, PAYLOAD_SELECTION_CHANGED);
                 }
             }
             notifySelectionChange();
@@ -593,7 +600,7 @@ public class MultiSelectionView extends MaterialCardView implements OnApplyWindo
                 select(position);
             }
             notifySelectionChange();
-            notifyItemRangeChanged(beginPosition, endPosition - beginPosition + 1, AdapterUtils.STUB);
+            notifyItemRangeChanged(beginPosition, endPosition - beginPosition + 1, PAYLOAD_SELECTION_CHANGED);
         }
 
         @Override
@@ -653,6 +660,62 @@ public class MultiSelectionView extends MaterialCardView implements OnApplyWindo
             super.onDetachedFromRecyclerView(recyclerView);
             recyclerView.removeOnLayoutChangeListener(this);
             mRecyclerView = null;
+        }
+
+        /**
+         * Modified submitList that handles structural viewport anchoring.
+         *
+         * @param list         The new filtered or unfiltered list
+         * @param saveState    True if the user is just starting to type a search query
+         * @param restoreState True if the user just cleared the search query
+         */
+        public void submitListWithScrollState(@Nullable List<T> list, boolean saveState, boolean restoreState) {
+            RecyclerView.LayoutManager layoutManager = mRecyclerView != null ? mRecyclerView.getLayoutManager() : null;
+            // Save historical state if entering a search
+            if (saveState && layoutManager != null) {
+                mPreFilterScrollState = layoutManager.onSaveInstanceState();
+            }
+            // Check if the user is currently at the exact top of the list
+            boolean isCurrentlyAtTop;
+            if (layoutManager instanceof LinearLayoutManager) {
+                int firstVisibleItem = ((LinearLayoutManager) layoutManager).findFirstVisibleItemPosition();
+                // Check offset to ensure they haven't scrolled down slightly
+                View topView = layoutManager.findViewByPosition(firstVisibleItem);
+                int topOffset = topView != null ? topView.getTop() : 0;
+                isCurrentlyAtTop = (firstVisibleItem == 0 && topOffset >= 0);
+            } else isCurrentlyAtTop = false;
+            // Submit the diff
+            super.submitList(list, () -> {
+                if (layoutManager != null) {
+                    if (isCurrentlyAtTop) {
+                        // The user was at the top.
+                        layoutManager.scrollToPosition(0);
+                        // If they were also clearing a search, discard the historical state
+                        if (restoreState) {
+                            mPreFilterScrollState = null;
+                        }
+                    } else if (restoreState && mPreFilterScrollState != null) {
+                        // Restore them to their deep historical position
+                        layoutManager.onRestoreInstanceState(mPreFilterScrollState);
+                        mPreFilterScrollState = null;
+                    } // else do nothing
+                }
+            });
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull VH holder, int position, @NonNull List<Object> payloads) {
+            if (!payloads.isEmpty()) {
+                for (Object payload : payloads) {
+                    if (Objects.equals(payload, PAYLOAD_SELECTION_CHANGED)) {
+                        // onBindViewHolder takes care of it.
+                        onBindViewHolder(holder, position);
+                    }
+                }
+                // We assume that all the other payloads have been taken care of by the subclass
+                return;
+            }
+            super.onBindViewHolder(holder, position, payloads);
         }
 
         @CallSuper
