@@ -495,11 +495,98 @@ class AppInfoFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener, MenuPr
         mActivity.searchView?.visibility = View.GONE
     }
 
+    override fun onRefresh() {
+        refreshDetails()
+        mSwipeRefresh.isRefreshing = false
+    }
+
     override fun onDetach() {
         mTagCloudFuture?.cancel(true)
         mActionsFuture?.cancel(true)
         mListFuture?.cancel(true)
         super.onDetach()
+    }
+
+    private fun refreshDetails() {
+        val pi = mPackageInfo ?: return
+        showProgressIndicator(true)
+        mAppInfoModel.loadTagCloud(pi, mIsExternalApk)
+        mAppInfoModel.loadAppInfo(pi, mIsExternalApk)
+    }
+
+    @WorkerThread
+    private fun getHorizontalActions(): List<ActionItem> {
+        val pn = mPackageName ?: return emptyList()
+        if (mIsExternalApk) return emptyList()
+        val userId = mUserId
+        val items = mutableListOf<ActionItem>()
+
+        // Launch
+        mAppInfoModel.getAppInfo().value?.mainActivity?.let { launchIntent ->
+            items.add(ActionItem(R.string.launch_app, R.drawable.ic_open_in_new)
+                .setOnClickListener { _ -> startActivity(launchIntent) })
+        }
+
+        // Force Stop
+        if (SelfPermissions.checkSelfOrRemotePermission(ManifestCompat.permission.FORCE_STOP_PACKAGES)) {
+            items.add(ActionItem(R.string.force_stop, R.drawable.ic_stop)
+                .setOnClickListener { _ ->
+                    MaterialAlertDialogBuilder(mActivity)
+                        .setTitle(R.string.force_stop)
+                        .setMessage(R.string.force_stop_message)
+                        .setPositiveButton(R.string.yes) { _, _ ->
+                            ThreadUtils.postOnBackgroundThread {
+                                try {
+                                    PackageManagerCompat.forceStopPackage(pn, userId)
+                                    mMainModel?.getTagsAlteredLiveData()?.postValue(true)
+                                    ThreadUtils.postOnMainThread { displayShortToast(R.string.done) }
+                                } catch (e: Exception) {
+                                    Log.e(TAG, e)
+                                    ThreadUtils.postOnMainThread {
+                                        displayLongToast(R.string.failed_to_stop, mAppLabel)
+                                    }
+                                }
+                            }
+                        }
+                        .setNegativeButton(R.string.no, null)
+                        .show()
+                })
+        }
+
+        // Clear Cache — reloads size info on completion (fixes upstream #2023)
+        items.add(ActionItem(R.string.clear_cache, R.drawable.ic_clear_cache)
+            .setOnClickListener { _ ->
+                ThreadUtils.postOnBackgroundThread {
+                    val success = PackageManagerCompat.deleteApplicationCacheFilesAsUser(pn, userId)
+                    ThreadUtils.postOnMainThread {
+                        displayShortToast(if (success) R.string.done else R.string.failed)
+                        mPackageInfo?.let { mAppInfoModel.loadAppInfo(it, mIsExternalApk) }
+                    }
+                }
+            })
+
+        // Clear Data
+        if (SelfPermissions.checkSelfOrRemotePermission(ManifestCompat.permission.CLEAR_APP_USER_DATA)) {
+            items.add(ActionItem(R.string.clear_data, R.drawable.ic_clear_data)
+                .setOnClickListener { _ ->
+                    MaterialAlertDialogBuilder(mActivity)
+                        .setTitle(R.string.clear_data)
+                        .setMessage(R.string.clear_data_message)
+                        .setPositiveButton(R.string.yes) { _, _ ->
+                            ThreadUtils.postOnBackgroundThread {
+                                val success = PackageManagerCompat.clearApplicationUserData(pn, userId)
+                                ThreadUtils.postOnMainThread {
+                                    displayShortToast(if (success) R.string.done else R.string.failed)
+                                    mPackageInfo?.let { mAppInfoModel.loadAppInfo(it, mIsExternalApk) }
+                                }
+                            }
+                        }
+                        .setNegativeButton(R.string.no, null)
+                        .show()
+                })
+        }
+
+        return items
     }
 
     private fun openInTermux() { runWithTermux(arrayOf("su", "-", mApplicationInfo!!.uid.toString())) }
