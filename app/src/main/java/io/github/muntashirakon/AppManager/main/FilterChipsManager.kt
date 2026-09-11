@@ -59,6 +59,8 @@ class FilterChipsManager(
             addFilterChip(FILTER_APPS_WITH_RULES, R.string.filter_apps_with_rules)
             addFilterChip(FILTER_STOPPED_APPS, R.string.filter_force_stopped_apps)
             addFilterChip(FILTER_APPS_WITH_KEYSTORE, R.string.filter_apps_with_keystore)
+            addFilterChip(FILTER_APPS_WITH_SPLITS, R.string.filter_apps_with_splits)
+            addFilterChip(FILTER_APPS_WITH_SAF, R.string.filter_apps_with_saf)
         }
     }
     
@@ -163,13 +165,15 @@ class FilterChipsManager(
         const val FILTER_STOPPED_APPS = MainListOptions.FILTER_STOPPED_APPS
         const val FILTER_DISABLED_APPS = MainListOptions.FILTER_DISABLED_APPS
         const val FILTER_APPS_WITH_KEYSTORE = MainListOptions.FILTER_APPS_WITH_KEYSTORE
+        const val FILTER_APPS_WITH_SPLITS = MainListOptions.FILTER_APPS_WITH_SPLITS
+        const val FILTER_APPS_WITH_SAF = MainListOptions.FILTER_APPS_WITH_SAF
 
         // All flags that have a chip — order matches setupFilterChips()
         val CHIP_FLAGS = listOf(
             FILTER_USER_APPS, FILTER_SYSTEM_APPS, FILTER_FROZEN_APPS, FILTER_UNFROZEN_APPS,
             FILTER_DISABLED_APPS, FILTER_RUNNING_APPS, FILTER_APPS_WITH_BACKUPS,
             FILTER_APPS_WITHOUT_BACKUPS, FILTER_APPS_WITH_RULES, FILTER_STOPPED_APPS,
-            FILTER_APPS_WITH_KEYSTORE
+            FILTER_APPS_WITH_KEYSTORE, FILTER_APPS_WITH_SPLITS, FILTER_APPS_WITH_SAF
         )
     }
 }
