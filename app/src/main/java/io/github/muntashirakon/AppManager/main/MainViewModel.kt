@@ -56,6 +56,9 @@ import io.github.muntashirakon.AppManager.utils.Utils
 import io.github.muntashirakon.io.Path
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.json.JSONException
 import java.io.BufferedWriter
@@ -92,6 +95,7 @@ class MainViewModel @Inject constructor(
     private val mOperationStatus = MutableLiveData<Boolean>()
     private val mApplicationItemsState = MutableStateFlow<List<ApplicationItem>>(emptyList())
     private val mSuggestionsState = MutableStateFlow<List<ApplicationItem>>(emptyList())
+    private val mFilterFlagsState = MutableStateFlow(Prefs.MainPage.getFilters())
     private val mApplicationItems: MutableList<ApplicationItem> = ArrayList()
 
     private val mCollator: Collator = Collator.getInstance()
@@ -123,6 +127,8 @@ class MainViewModel @Inject constructor(
     fun getOperationStatus(): LiveData<Boolean> = mOperationStatus
 
     fun getSuggestions(): StateFlow<List<ApplicationItem>> = mSuggestionsState.asStateFlow()
+
+    fun getFilterFlags(): StateFlow<Int> = mFilterFlagsState.asStateFlow()
 
     fun deselect(item: ApplicationItem): ApplicationItem {
         synchronized(mApplicationItems) {
@@ -234,6 +240,7 @@ class MainViewModel @Inject constructor(
     override fun addFilterFlag(filterFlag: Int) {
         mFilterFlags = mFilterFlags or filterFlag
         Prefs.MainPage.setFilters(mFilterFlags)
+        mFilterFlagsState.value = mFilterFlags
         cancelIfRunning()
         mFilterResult = viewModelScope.launch(Dispatchers.IO) { filterItemsByFlags() }
     }
@@ -241,6 +248,7 @@ class MainViewModel @Inject constructor(
     override fun removeFilterFlag(filterFlag: Int) {
         mFilterFlags = mFilterFlags and filterFlag.inv()
         Prefs.MainPage.setFilters(mFilterFlags)
+        mFilterFlagsState.value = mFilterFlags
         cancelIfRunning()
         mFilterResult = viewModelScope.launch(Dispatchers.IO) { filterItemsByFlags() }
     }
@@ -294,6 +302,7 @@ class MainViewModel @Inject constructor(
         if (mFilterFlags != newFilterFlags) {
             mFilterFlags = newFilterFlags
             Prefs.MainPage.setFilters(mFilterFlags)
+            mFilterFlagsState.value = mFilterFlags
             cancelIfRunning()
             mFilterResult = viewModelScope.launch(Dispatchers.IO) { filterItemsByFlags() }
         }

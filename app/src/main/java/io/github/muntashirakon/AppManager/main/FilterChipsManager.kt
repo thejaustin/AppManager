@@ -68,21 +68,17 @@ class FilterChipsManager(
     private fun addFilterChip(filterFlag: Int, stringResId: Int) {
         val chip = Chip(mContext).apply {
             text = mContext.getString(stringResId)
+            tag = filterFlag
             isCheckable = true
             isCheckedIconVisible = false
             setChipBackgroundColorResource(R.color.filter_chip_background)
             setTextColor(ContextCompat.getColor(mContext, R.color.filter_chip_text))
-            
+
             setOnCheckedChangeListener { _, isChecked ->
-                if (isChecked) {
-                    mActiveFilters.add(filterFlag)
-                } else {
-                    mActiveFilters.remove(filterFlag)
-                }
+                if (isChecked) mActiveFilters.add(filterFlag) else mActiveFilters.remove(filterFlag)
                 mOnFilterChangeListener.onFilterChanged(mActiveFilters.toSet())
             }
         }
-        
         mFilterChipGroup?.addView(chip)
     }
     
@@ -106,22 +102,35 @@ class FilterChipsManager(
     fun getActiveFilters(): Set<Int> = mActiveFilters.toSet()
     
     /**
-     * Set active filters programmatically
+     * Set active filters programmatically (from a set of flag values).
      */
     fun setActiveFilters(filters: Set<Int>) {
         mActiveFilters.clear()
         mActiveFilters.addAll(filters)
-        
+        syncChipCheckedState(filters)
+    }
+
+    /**
+     * Restore chip checked state from a saved filter bitmask (e.g. from Prefs).
+     */
+    fun restoreFromBitmask(bitmask: Int) {
+        val active = CHIP_FLAGS.filter { bitmask and it != 0 }.toSet()
+        mActiveFilters.clear()
+        mActiveFilters.addAll(active)
+        syncChipCheckedState(active)
+    }
+
+    private fun syncChipCheckedState(filters: Set<Int>) {
         mFilterChipGroup?.apply {
             for (i in 0 until childCount) {
-                val chip = getChildAt(i) as? Chip
-                // Chip tags are stored as chip IDs
-                chip?.tag?.let { tag ->
-                    if (filters.contains(tag as Int)) {
-                        chip.isChecked = true
-                    } else {
-                        chip.isChecked = false
-                    }
+                val chip = getChildAt(i) as? Chip ?: continue
+                val flag = chip.tag as? Int ?: continue
+                // Suppress the listener while programmatically toggling so we don't re-fire
+                chip.setOnCheckedChangeListener(null)
+                chip.isChecked = filters.contains(flag)
+                chip.setOnCheckedChangeListener { _, isChecked ->
+                    if (isChecked) mActiveFilters.add(flag) else mActiveFilters.remove(flag)
+                    mOnFilterChangeListener.onFilterChanged(mActiveFilters.toSet())
                 }
             }
         }
@@ -154,5 +163,13 @@ class FilterChipsManager(
         const val FILTER_STOPPED_APPS = MainListOptions.FILTER_STOPPED_APPS
         const val FILTER_DISABLED_APPS = MainListOptions.FILTER_DISABLED_APPS
         const val FILTER_APPS_WITH_KEYSTORE = MainListOptions.FILTER_APPS_WITH_KEYSTORE
+
+        // All flags that have a chip — order matches setupFilterChips()
+        val CHIP_FLAGS = listOf(
+            FILTER_USER_APPS, FILTER_SYSTEM_APPS, FILTER_FROZEN_APPS, FILTER_UNFROZEN_APPS,
+            FILTER_DISABLED_APPS, FILTER_RUNNING_APPS, FILTER_APPS_WITH_BACKUPS,
+            FILTER_APPS_WITHOUT_BACKUPS, FILTER_APPS_WITH_RULES, FILTER_STOPPED_APPS,
+            FILTER_APPS_WITH_KEYSTORE
+        )
     }
 }

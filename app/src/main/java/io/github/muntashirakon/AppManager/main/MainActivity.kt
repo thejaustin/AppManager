@@ -22,7 +22,11 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.ActionBar
 import androidx.collection.ArrayMap
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.launch
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.checkbox.MaterialCheckBox
@@ -293,7 +297,14 @@ lifecycleScope.launch {
             }
         })
         mFilterChipsManager?.initialize()
-        
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel!!.getFilterFlags().collect { flags ->
+                    mFilterChipsManager?.restoreFromBitmask(flags)
+                }
+            }
+        }
+
         viewModel!!.getOperationStatus().observe(this) { status ->
             mProgressIndicator!!.hide()
             if (status) UIUtils.displayShortToast(R.string.done)
