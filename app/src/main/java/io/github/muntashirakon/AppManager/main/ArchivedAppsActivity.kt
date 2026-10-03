@@ -42,7 +42,7 @@ class ArchivedAppsActivity : BaseActivity() {
             }
         }
 
-        val recyclerView: RecyclerView = findViewById(R.id.archived_apps_list)
+        val recyclerView: RecyclerView = findViewById(R.id.scrollView)
         emptyViewContainer = findViewById(R.id.empty_view_container)
         recyclerView.layoutManager = LinearLayoutManager(this)
 

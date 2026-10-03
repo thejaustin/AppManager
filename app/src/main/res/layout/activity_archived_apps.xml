@@ -10,7 +10,7 @@
     <include layout="@layout/appbar" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/archived_apps_list"
+        android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
@@ -27,13 +27,14 @@
         android:gravity="center"
         android:orientation="vertical"
         android:padding="32dp"
-        android:visibility="gone">
+        android:visibility="gone"
+        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="80dp"
             android:layout_height="80dp"
             app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
-            app:cardCornerRadius="24dp"
+            app:cardCornerRadius="28dp"
             app:cardElevation="0dp"
             app:strokeWidth="0dp">
 
@@ -47,13 +48,24 @@
         </com.google.android.material.card.MaterialCardView>
 
         <TextView
-            android:id="@+id/empty_view"
+            android:id="@+id/empty_view_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="@string/no_archived_apps"
             android:textAppearance="?attr/textAppearanceTitleMedium"
             android:textColor="?attr/colorOnSurface" />
+
+        <TextView
+            android:id="@+id/empty_view_subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:gravity="center"
+            android:maxWidth="260dp"
+            android:text="@string/no_archived_apps_subtitle"
+            android:textAppearance="?attr/textAppearanceBodySmall"
+            android:textColor="?attr/colorOnSurfaceVariant" />
 
     </LinearLayout>
 

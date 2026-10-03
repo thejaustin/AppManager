@@ -1560,6 +1560,7 @@
     <string name="archived_successfully">Archived successfully</string>
     <string name="archived_apps">Archived apps</string>
     <string name="no_archived_apps">No archived apps</string>
+    <string name="no_archived_apps_subtitle">Archive an app to uninstall it while keeping its data for later restoration</string>
     <string name="remove_from_archive">Remove from archive</string>
     <string name="install_from_archive">Install from archive</string>
     <string name="source_play_store">Play Store</string>

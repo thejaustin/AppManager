@@ -55,6 +55,8 @@ class FilterableAppInfo(val packageInfo: PackageInfo, private val mPackageUsageI
 
     override fun getPackageName(): String = packageInfo.packageName
 
+    override fun getUid(): Int = applicationInfo.uid
+
     override fun getUserId(): Int = mUserId
 
     override fun getAppLabel(): String {

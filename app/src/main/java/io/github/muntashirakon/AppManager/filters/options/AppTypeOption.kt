@@ -188,7 +188,8 @@ class AppTypeOption : FilterOption("app_type") {
             if (flag and APP_TYPE_WITH_SPLITS != 0) {
                 if (!info.hasSplits()) return true
             }
-            // All requested flags are present, so "not all flags missing"\nreturn false
+            // All requested flags are present, so none are missing
+            return false
         }
     }
 
