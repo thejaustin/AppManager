@@ -22,7 +22,11 @@ import java.lang.annotation.RetentionPolicy
 import java.util.Collections
 
 object NotificationUtils {
-    private const val HIGH_PRIORITY_CHANNEL_ID = BuildConfig.APPLICATION_ID + ".channel.HIGH_PRIORITY"\nprivate const val INSTALL_CONFIRM_CHANNEL_ID = BuildConfig.APPLICATION_ID + ".channel.INSTALL_CONFIRM"\nprivate const val FREEZE_UNFREEZE_CHANNEL_ID = BuildConfig.APPLICATION_ID + ".channel.FREEZE_UNFREEZE"\n@JvmField
+    private const val HIGH_PRIORITY_CHANNEL_ID = BuildConfig.APPLICATION_ID + ".channel.HIGH_PRIORITY"
+    private const val CRASH_CHANNEL_ID = BuildConfig.APPLICATION_ID + ".channel.CRASH"
+    private const val INSTALL_CONFIRM_CHANNEL_ID = BuildConfig.APPLICATION_ID + ".channel.INSTALL_CONFIRM"
+    private const val FREEZE_UNFREEZE_CHANNEL_ID = BuildConfig.APPLICATION_ID + ".channel.FREEZE_UNFREEZE"
+    @JvmField
     val HIGH_PRIORITY_NOTIFICATION_INFO: NotificationProgressHandler.NotificationManagerInfo =
         NotificationProgressHandler.NotificationManagerInfo(
             HIGH_PRIORITY_CHANNEL_ID, "Alerts", NotificationManagerCompat.IMPORTANCE_HIGH
@@ -76,6 +80,12 @@ object NotificationUtils {
     }
 
     @JvmStatic
+    fun getCrashNotificationBuilder(context: Context): NotificationCompat.Builder {
+        return NotificationCompat.Builder(context, CRASH_CHANNEL_ID)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+    }
+
+    @JvmStatic
     fun displayHighPriorityNotification(context: Context, notification: Notification) {
         displayHighPriorityNotification(context) { _ -> notification }
     }
@@ -85,11 +95,27 @@ object NotificationUtils {
         context: Context,
         notification: NotificationBuilder
     ) {
-        val notificationTag = "alert"\nval notificationId = nextNotificationId(notificationTag)
+        val notificationTag = "alert"
+        val notificationId = nextNotificationId(notificationTag)
         displayNotification(
             context, HIGH_PRIORITY_CHANNEL_ID, "Alerts",
             NotificationManagerCompat.IMPORTANCE_HIGH, notificationTag, notificationId, notification
         )
+    }
+
+    @JvmStatic
+    fun displayCrashNotification(context: Context, notification: Notification) {
+        val manager = NotificationManagerCompat.from(context)
+        manager.createNotificationChannel(
+            NotificationChannelCompat.Builder(
+                CRASH_CHANNEL_ID, NotificationManagerCompat.IMPORTANCE_HIGH
+            ).setName("Crash reports").build()
+        )
+        if (SelfPermissions.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)) {
+            manager.notify("crash", 1, notification)
+        } else {
+            android.util.Log.e("NotificationUtils", "Crash notification permission is not granted")
+        }
     }
 
     @JvmStatic

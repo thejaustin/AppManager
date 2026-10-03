@@ -1558,6 +1558,11 @@
     <string name="suggested_for_archiving">Suggested for archiving</string>
     <string name="infrequent_use">Infrequent use</string>
     <string name="archived_successfully">Archived successfully</string>
+    <string name="archived_apps">Archived apps</string>
+    <string name="no_archived_apps">No archived apps</string>
+    <string name="remove_from_archive">Remove from archive</string>
+    <string name="install_from_archive">Install from archive</string>
+    <string name="source_play_store">Play Store</string>
     <string name="general">General</string>
     <string name="security_and_privacy">Security and Privacy</string>
     <string name="management">Management</string>

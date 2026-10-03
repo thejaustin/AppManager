@@ -10,6 +10,7 @@ import io.github.muntashirakon.AppManager.db.entity.ArchivedApp
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -22,4 +23,10 @@ class ArchivedAppsViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+
+    fun delete(archivedApp: ArchivedApp) {
+        viewModelScope.launch {
+            archivedAppDao.delete(archivedApp)
+        }
+    }
 }

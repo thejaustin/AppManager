@@ -16,43 +16,46 @@ class AMExceptionHandler(private val mContext: Context) : Thread.UncaughtExcepti
     private val mDefaultExceptionHandler: Thread.UncaughtExceptionHandler? = Thread.getDefaultUncaughtExceptionHandler()
 
     override fun uncaughtException(t: Thread, e: Throwable) {
-        val report = StringBuilder("$e
-")
-        e.stackTrace.forEach { report.append("    at $it
-") }
-        var cause: Throwable? = e.cause
-        while (cause != null) {
-            report.append(" Caused by: $cause
-")
-            cause.stackTrace.forEach { report.append("   at $it
-") }
-            cause = cause.cause
-        }
-        report.append("\nDevice Info:
-")
-        report.append(DeviceInfo(mContext))
-
-        val i = Intent(Intent.ACTION_SEND).apply {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                identifier = System.currentTimeMillis().toString()
+        try {
+            val report = StringBuilder("$e\n")
+            e.stackTrace.forEach { report.append("    at $it\n") }
+            var cause: Throwable? = e.cause
+            while (cause != null) {
+                report.append(" Caused by: $cause\n")
+                cause.stackTrace.forEach { report.append("   at $it\n") }
+                cause = cause.cause
             }
-            type = "text/plain"\nputExtra(Intent.EXTRA_EMAIL, arrayOf(EMAIL))
-            putExtra(Intent.EXTRA_SUBJECT, "App Manager: Crash report")
-            putExtra(Intent.EXTRA_TEXT, report.toString())
+            report.append("\nDevice Info:\n")
+            report.append(DeviceInfo(mContext))
+
+            val i = Intent(Intent.ACTION_SEND).apply {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    identifier = System.currentTimeMillis().toString()
+                }
+                type = "text/plain"
+                putExtra(Intent.EXTRA_EMAIL, arrayOf(EMAIL))
+                putExtra(Intent.EXTRA_SUBJECT, "App Manager: Crash report")
+                putExtra(Intent.EXTRA_TEXT, report.toString())
+            }
+            val pendingIntent = PendingIntentCompat.getActivity(
+                mContext, 0,
+                Intent.createChooser(i, mContext.getText(R.string.send_crash_report)),
+                PendingIntent.FLAG_ONE_SHOT, false
+            )
+            val builder = NotificationUtils.getCrashNotificationBuilder(mContext)
+                .setAutoCancel(true)
+                .setDefaults(Notification.DEFAULT_ALL)
+                .setWhen(System.currentTimeMillis())
+                .setSmallIcon(R.drawable.ic_default_notification)
+                .setTicker(mContext.getText(R.string.app_name))
+                .setContentTitle(mContext.getText(R.string.am_crashed))
+                .setContentText(mContext.getText(R.string.tap_to_submit_crash_report))
+                .setContentIntent(pendingIntent)
+            NotificationUtils.displayCrashNotification(mContext, builder.build())
+            android.os.SystemClock.sleep(250)
+        } catch (reportError: Throwable) {
+            android.util.Log.e("AMExceptionHandler", "Unable to display crash notification", reportError)
         }
-        val pendingIntent = PendingIntentCompat.getActivity(mContext, 0,
-            Intent.createChooser(i, mContext.getText(R.string.send_crash_report)),
-            PendingIntent.FLAG_ONE_SHOT, true)
-        val builder = NotificationUtils.getHighPriorityNotificationBuilder(mContext)
-            .setAutoCancel(true)
-            .setDefaults(Notification.DEFAULT_ALL)
-            .setWhen(System.currentTimeMillis())
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setTicker(mContext.getText(R.string.app_name))
-            .setContentTitle(mContext.getText(R.string.am_crashed))
-            .setContentText(mContext.getText(R.string.tap_to_submit_crash_report))
-            .setContentIntent(pendingIntent)
-        NotificationUtils.displayHighPriorityNotification(mContext, builder.build())
 
         mDefaultExceptionHandler?.uncaughtException(t, e)
     }

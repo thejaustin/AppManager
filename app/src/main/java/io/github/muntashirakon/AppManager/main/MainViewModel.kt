@@ -488,9 +488,6 @@ class MainViewModel @Inject constructor(
                 }
                 val result = filterItem.getFilteredList(candidateApplicationItems)
                 for (item in result) {
-                    if ((mFilterFlags and MainListOptions.FILTER_APPS_WITH_SPLITS) != 0 && !item.info.hasSplits) {
-                        continue
-                    }
                     if ((mFilterFlags and MainListOptions.FILTER_APPS_WITH_SAF) != 0 && !item.info.usesSaf) {
                         continue
                     }

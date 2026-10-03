@@ -69,6 +69,7 @@ interface IFilterableAppInfo {
     fun hasKeyStoreItems(): Boolean
     fun getRuleCount(): Int
     fun getSsaid(): String?
+    fun hasSplits(): Boolean
     fun hasDomainUrls(): Boolean
     fun hasStaticSharedLibrary(): Boolean
     fun isHidden(): Boolean

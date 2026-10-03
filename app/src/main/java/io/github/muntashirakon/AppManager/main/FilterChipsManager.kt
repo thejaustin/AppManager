@@ -10,6 +10,7 @@ import androidx.core.content.ContextCompat
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import io.github.muntashirakon.AppManager.R
+import io.github.muntashirakon.AppManager.utils.appearance.ExpressiveShapeMorph
 
 /**
  * Manages quick filter chips for the main app list.
@@ -80,6 +81,7 @@ class FilterChipsManager(
                 if (isChecked) mActiveFilters.add(filterFlag) else mActiveFilters.remove(filterFlag)
                 mOnFilterChangeListener.onFilterChanged(mActiveFilters.toSet())
             }
+            ExpressiveShapeMorph.bindChipSelectionMorph(this, uncheckedRadiusDp = 8f, checkedRadiusDp = 20f)
         }
         mFilterChipGroup?.addView(chip)
     }

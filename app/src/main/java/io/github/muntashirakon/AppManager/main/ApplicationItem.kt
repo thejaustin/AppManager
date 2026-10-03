@@ -19,11 +19,12 @@ import io.github.muntashirakon.AppManager.compat.InstallSourceInfoCompat
 import io.github.muntashirakon.AppManager.compat.PackageManagerCompat
 import io.github.muntashirakon.AppManager.compat.SensorServiceCompat
 import io.github.muntashirakon.AppManager.compat.UsageStatsManagerCompat
+import io.github.muntashirakon.AppManager.filters.IFilterableAppInfo
 import io.github.muntashirakon.AppManager.filters.options.ComponentsOption
 import io.github.muntashirakon.AppManager.filters.options.FreezeOption
-import io.github.muntashirakon.AppManager.main.struct.IApplicationItem
 import io.github.muntashirakon.AppManager.backup.BackupUtils
 import io.github.muntashirakon.AppManager.backup.struct.BackupMetadataV5
+import io.github.muntashirakon.AppManager.db.entity.Backup
 import io.github.muntashirakon.AppManager.compat.ManifestCompat
 import io.github.muntashirakon.AppManager.misc.AppUsageStatsManager
 import io.github.muntashirakon.AppManager.misc.PackageSizeInfo
@@ -49,13 +50,15 @@ import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
-class ApplicationItem : IApplicationItem, Serializable {
+class ApplicationItem : IFilterableAppInfo, Serializable {
     companion object {
         private const val serialVersionUID = 1L
     }
 
     // Default attributes
-    var label: String = ""\noverride var packageName: String = ""\nvar versionName: String? = null
+    var label: String = ""
+    var packageName: String = ""
+    var versionName: String? = null
     var versionCode: Long = 0
     var targetSdk: Int = 0
     var firstInstallTime: Long = 0
@@ -67,6 +70,8 @@ class ApplicationItem : IApplicationItem, Serializable {
     var userIds: IntArray = intArrayOf()
     var sha: Pair<String, String>? = null // Issuer short name and SHA-256
     var ssaid: String? = null // SSAID
+    var hasSplits: Boolean = false
+    var usesSaf: Boolean = false
 
     // Dynamic attributes, filled by generateOtherInfo
     var isStopped: Boolean = false
@@ -193,6 +198,7 @@ class ApplicationItem : IApplicationItem, Serializable {
     override fun hashCode(): Int = Objects.hash(packageName)
 
     override fun getPackageName(): String = packageName
+    override fun getUid(): Int = uid
 
     override fun getUserId(): Int {
         if (mUserId != null) return mUserId!!
@@ -256,8 +262,8 @@ class ApplicationItem : IApplicationItem, Serializable {
         return mApplicationInfo?.minSdkVersion ?: 0
     }
 
-    override fun getBackups(): Array<BackupMetadataV5.Metadata> {
-        return (BackupUtils.getBackupMetadataFromDbNoLockValidate(packageName).map { it.metadata }.toTypedArray())
+    override fun getBackups(): Array<Backup> {
+        return BackupUtils.getBackupMetadataFromDbNoLockValidate(packageName).toTypedArray()
     }
 
     fun setRunning(running: Boolean) {
@@ -396,6 +402,8 @@ class ApplicationItem : IApplicationItem, Serializable {
     }
 
     override fun getSsaid(): String? = ssaid
+
+    override fun hasSplits(): Boolean = hasSplits
 
     override fun hasDomainUrls(): Boolean {
         fetchPackageInfo()

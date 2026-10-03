@@ -36,6 +36,7 @@ class AppTypeOption : FilterOption("app_type") {
         const val APP_TYPE_PWA = 1 shl 20
         const val APP_TYPE_SHORT_CODE = 1 shl 21
         const val APP_TYPE_OVERLAY = 1 shl 22
+        const val APP_TYPE_WITH_SPLITS = 1 shl 23
 
         /**
          * Returns true if the given info matches all the flags in 'flag'.
@@ -109,6 +110,9 @@ class AppTypeOption : FilterOption("app_type") {
             if (flag and APP_TYPE_SSAID != 0) {
                 if (TextUtils.isEmpty(info.ssaid)) return false
             }
+            if (flag and APP_TYPE_WITH_SPLITS != 0) {
+                if (!info.hasSplits()) return false
+            }
             // All requested flags are matched
             return true
         }
@@ -181,6 +185,9 @@ class AppTypeOption : FilterOption("app_type") {
             if (flag and APP_TYPE_SSAID != 0) {
                 if (TextUtils.isEmpty(info.ssaid)) return true
             }
+            if (flag and APP_TYPE_WITH_SPLITS != 0) {
+                if (!info.hasSplits()) return true
+            }
             // All requested flags are present, so "not all flags missing"\nreturn false
         }
     }
@@ -218,6 +225,7 @@ class AppTypeOption : FilterOption("app_type") {
         put(APP_TYPE_SSAID, "Has SSAID")
         put(APP_TYPE_KEYSTORE, "Uses Android KeyStore")
         put(APP_TYPE_WITH_RULES, "Has rules")
+        put(APP_TYPE_WITH_SPLITS, "Has split APKs")
 //        put(APP_TYPE_PWA, "Progressive web app (PWA)"); // TODO: 11/21/24
 //        put(APP_TYPE_SHORT_CODE, "Uses short code"); // TODO: 11/21/24
 //        put(APP_TYPE_OVERLAY, "Overlay app"); // TODO: 11/21/24

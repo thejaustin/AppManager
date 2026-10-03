@@ -12,6 +12,7 @@ import com.google.android.material.button.MaterialButton
 import io.github.muntashirakon.AppManager.R
 import io.github.muntashirakon.AppManager.utils.appearance.ExpressiveHaptics
 import io.github.muntashirakon.AppManager.utils.appearance.ExpressiveMotion
+import io.github.muntashirakon.AppManager.utils.appearance.ExpressiveShapeMorph
 
 /**
  * Material 3 Expressive Split Button
@@ -184,7 +185,12 @@ class SplitButton @JvmOverloads constructor(
             .setInterpolator(ExpressiveMotion.Easing.EMPHASIZED)
             .start()
         
-        // Shape morphing animation (scale effect)
+        // Shape morphing animation (scale and corner radius)
+        trailingButton?.let { tb ->
+            val targetRadius = if (isMenuOpen) ExpressiveShapeMorph.Tokens.CORNER_EXTRA_LARGE else ExpressiveShapeMorph.Tokens.CORNER_SMALL
+            ExpressiveShapeMorph.morphCornerRadius(tb, targetRadius, ExpressiveMotion.Duration.MODERATE)
+        }
+
         if (isMenuOpen) {
             // Expand
             animate()

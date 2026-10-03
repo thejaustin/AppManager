@@ -150,7 +150,7 @@ class MainListOptions : ListOptions() {
                 filterItem.addFilterOption(option)
             }
             if (flags and FILTER_APPS_WITH_SPLITS != 0) {
-                // TODO: 7/28/25
+                appTypeWithFlags = appTypeWithFlags or AppTypeOption.APP_TYPE_WITH_SPLITS
             }
             if (flags and FILTER_INSTALLED_APPS != 0) {
                 val option = InstalledOption()
@@ -169,7 +169,8 @@ class MainListOptions : ListOptions() {
             }
             if (flags and FILTER_APPS_WITH_KEYSTORE != 0) appTypeWithFlags = appTypeWithFlags or AppTypeOption.APP_TYPE_KEYSTORE
             if (flags and FILTER_APPS_WITH_SAF != 0) {
-                // TODO: 7/28/25
+                // SAF check reads /data/system/urigrants.xml which requires root; handled as a
+                // post-filter in MainViewModel using ApplicationItem.usesSaf populated during sync.
             }
             if (flags and FILTER_APPS_WITH_SSAID != 0) appTypeWithFlags = appTypeWithFlags or AppTypeOption.APP_TYPE_SSAID
             if (flags and FILTER_STOPPED_APPS != 0) appTypeWithFlags = appTypeWithFlags or AppTypeOption.APP_TYPE_STOPPED

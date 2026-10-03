@@ -194,6 +194,7 @@ dependencies {
 
     // FM
     implementation "com.j256.simplemagic:simplemagic:${simplemagic_version}"
+    implementation "androidx.exifinterface:exifinterface:${exif_version}"
 
     // Privileged
     implementation "com.github.MuntashirAkon:libadb-android:${libadb_version}"
